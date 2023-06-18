@@ -11,14 +11,14 @@ public class RedeNeural implements Cloneable, Serializable{
    public Camada[] ocultas;
    public Camada saida;
    
-   public int qtdNeuroniosEntrada;
-   public int qtdNeuroniosOcultas;
-   public int qtdNeuroniosSaida;
-   public int qtdCamadasOcultas;
+   private int qtdNeuroniosEntrada;
+   private int qtdNeuroniosOcultas;
+   private int qtdNeuroniosSaida;
+   private int qtdCamadasOcultas;
 
+   private int BIAS = 0;
    private double alcancePeso = 100;
-   int BIAS = 1;
-   double TAXA_APRENDIZAGEM = 0.1;
+   private double TAXA_APRENDIZAGEM = 0.00001;
 
    //padronizar uso das funções de ativação
    private final int ativacaoRelu = 1;
@@ -35,52 +35,126 @@ public class RedeNeural implements Cloneable, Serializable{
    int i, j, k;//contadores
 
    /**
-    * <p>Cria uma instância de rede neural artificial. A arquitetura da rede se 
-    * baseia em uma camada de entrada, várias camadas ocultas mas com o mesmo número 
-    * de neurônios cada, e uma camada de saída.</p>
-    * os valores de todos os parâmetros pedidos <strong>NÃO</strong> devem
+    * <p>
+    *    Cria uma instância de rede neural artificial. A arquitetura da rede se 
+    *    baseia em uma camada de entrada, várias camadas ocultas mas com o mesmo 
+    *    número de neurônios cada, e uma camada de saída.
+    * </p>
+    * <p>
+    *    Após instanciar o modelo, é necessário compilar por meio da função "compilar()", certifique-se 
+    *    de configurar as propriedades da rede por meio das funções de configuração fornecidas como, alcance
+    *    dos pesos iniciais, funções de ativação e quantidade de bias. Caso não use nenhuma das funções de 
+    *    configuração, a rede será compilada com os valores padrão.
+    * </p>
+    * os valores de todos os parâmetros pedidos <strong>NÃO devem</strong>
     * ser menores que 1.
-    * @author Thiago Barroso
-    * @param qtdNeuroniosEntrada quantidade de neurônios na camada de entrada
-    * @param qtdNeuroniosOcultas quantidade de neurônios das camadas ocultas
-    * @param qtdNeuroniosSaida quantidade de neurônios na camada de saída
-    * @param qtdCamadasOcultas quantidade de camadas ocultas
+    * @author Thiago Barroso, acadêmico de Engenharia da Computação pela Universidade Federal do Pará, Campus Tucuruí.
+    * @param qtdNeuroniosEntrada quantidade de neurônios na camada de entrada.
+    * @param qtdNeuroniosOcultas quantidade de neurônios das camadas ocultas.
+    * @param qtdNeuroniosSaida quantidade de neurônios na camada de saída.
+    * @param qtdCamadasOcultas quantidade de camadas ocultas.
+    * @throws IllegalArgumentException se os valores fornecidos forem menores que um.
     */
    public RedeNeural(int qtdNeuroniosEntrada, int qtdNeuroniosOcultas, int qtdNeuroniosSaida, int qtdCamadasOcultas){
       if(qtdNeuroniosEntrada < 1 || qtdNeuroniosOcultas < 1 || qtdNeuroniosSaida < 1 || qtdCamadasOcultas < 1){
-         throw new IllegalArgumentException("Os valores devem ser maiores ou iguais a um.");
+         throw new IllegalArgumentException("Os valores fornecidos devem ser maiores ou iguais a um.");
       }
 
       this.qtdNeuroniosEntrada = qtdNeuroniosEntrada;
       this.qtdNeuroniosOcultas = qtdNeuroniosOcultas;
       this.qtdNeuroniosSaida = qtdNeuroniosSaida;
       this.qtdCamadasOcultas = qtdCamadasOcultas;
-
-      criarRede();
    }
 
 
-   //instancia os neuronios e as camadas
-   private void criarRede(){
+   /**
+    * Define o valor máximo e mínimo na hora de aleatorizar os pesos da rede 
+    * para a compilação, os novos valores não podem ser menores ou iguais a zero.
+    * <p>O valor padrão de alcance é 100.</p>
+    * @param alcancePesos novo valor máximo e mínimo.
+    * @throws IllegalArgumentException se o novo valor for menor ou igual a zero.
+    */
+   public void configurarAlcancePesos(double alcancePesos){
+      if(alcancePesos <= 0) throw new IllegalArgumentException("Os novos valores de alcance dos pesos não podem ser menores ou iguais a zero.");
+      this.alcancePeso = alcancePesos;
+   }
+
+
+   /**
+    * Define a quantidade de neurônios adicionais que atuarão como viés da rede, eles não são
+    * considerados como parte dos dados de entrada.
+    * <p>O valor padrão para o bias é 0.</p>
+    * @param qtdBias novo valor para a quantidade de bias.
+    * @throws IllegalArgumentException se o novo valor for menor que zero.
+    */
+   public void configurarBias(int qtdBias){
+      if(qtdBias < 0) throw new IllegalArgumentException("O novo valor do bias não pode ser menor que zero.");
+      this.BIAS = qtdBias;
+   }
+
+
+   /**
+    * Define a função de ativação que a rede usará nos neurônios das camadas ocultas 
+    * e na camada de saída.
+    * <p>O valor padrão é 1 e 2.</p>
+    * Segue a lista das funções disponíveis:
+    * <ul>
+    *    <li> 1 - ReLu. </li>
+    *    <li> 2 - ReLu derivada. </li>
+    *    <li> 3 - Sigmoide. </li>
+    *    <li> 4 - Sigmoid derivada .</li>
+    *    <li> 5 - Tangente hiperbólica. </li>
+    *    <li> 6 - Tangente hiperbólica derivada. </li>
+    *    <li> 7 - Leaky ReLu. </li>
+    * </ul>
+    * @param ocultas função de ativação das camadas ocultas.
+    * @param saida função de ativação da ultima camada oculta para a saída.
+    * @throws IllegalArgumentException se os valores fornecidos forem menores que 1 ou maiores que 7.
+    */
+   public void configurarFuncaoAtivacao(int ocultas, int saida){
+      if((ocultas < 1) || (ocultas > 7) || (saida < 1) || (saida > 7)) throw new IllegalArgumentException("Os valores fornecidos não podem ser menores que 1, nem maiores que 7");
+
+      funcaoAtivacao = ocultas;
+      funcaoAtivacaoSaida = saida;
+   }
+
+
+   /**
+    * Compila o modelo de rede baseado nos valores fornecidos. Antes da compilação é possível
+    * informar alguns valores ajustáveis na inicialização da rede, como:
+    * <ul>
+    *    <li>Valor máximo e mínimo para os pesos gerados aleatoriamente.</li>
+    *    <li>Funções de ativação para as camadas ocultas e para a camada de saída.</li>
+    *    <li>Quantidade de neurônios como atuando como bias.</li>
+    * </ul>
+    * <p>
+    *    Caso nenhuma configuração seja feita, a rede será inicializada com os valores padrão. 
+    * </p>
+    * Após a compilação o modelo está pronto para ser usado.
+    */
+   public void compilar(){
       //inicializar camada de entrada
+      int QTD_NEURONIOS_ENTRADA = qtdNeuroniosEntrada + BIAS;
+      int QTD_NEURONIOS_OCULTAS = qtdNeuroniosOcultas + BIAS;
+      
       entrada = new Camada();
-      entrada.neuronios = new Neuronio[qtdNeuroniosEntrada];
-      for(int i = 0; i < qtdNeuroniosEntrada; i++){
-         entrada.neuronios[i] = new Neuronio(qtdNeuroniosOcultas, alcancePeso);
+      entrada.neuronios = new Neuronio[QTD_NEURONIOS_ENTRADA];//BIAS como neuronio adicional
+      for(int i = 0; i < entrada.neuronios.length; i++){
+         entrada.neuronios[i] = new Neuronio(QTD_NEURONIOS_OCULTAS, alcancePeso);
       }
 
       //inicializar camadas ocultas
       ocultas = new Camada[qtdCamadasOcultas];
-      for (int i = 0; i < qtdCamadasOcultas; i++) {
+      for (int i = 0; i < qtdCamadasOcultas; i++){
          Camada novaOculta = new Camada();
-         novaOculta.neuronios = new Neuronio[qtdNeuroniosOcultas];
+         novaOculta.neuronios = new Neuronio[QTD_NEURONIOS_OCULTAS];
       
-         for (int j = 0; j < qtdNeuroniosOcultas; j++) {
+         for (int j = 0; j < novaOculta.neuronios.length; j++){
             if (i == (qtdCamadasOcultas-1)){
                novaOculta.neuronios[j] = new Neuronio(qtdNeuroniosSaida, alcancePeso);
             
             }else{
-               novaOculta.neuronios[j] = new Neuronio(qtdNeuroniosOcultas, alcancePeso);
+               novaOculta.neuronios[j] = new Neuronio(QTD_NEURONIOS_OCULTAS, alcancePeso);
             }
          }
          ocultas[i] = novaOculta;
@@ -97,15 +171,16 @@ public class RedeNeural implements Cloneable, Serializable{
 
    /**
     * Propaga os dados de entrada pela rede neural pelo método de feedforward.
-    * @param dados dados usados para a camada de entrada
+    * @param dados dados usados para a camada de entrada.
+    * @throws IllegalArgumentException se o tamanho dos dados de entrada for diferente do tamanho dos neurônios de entrada, sem contar os bias.
     */
    public void calcularSaida(double[] dados){
-      if(dados.length != this.entrada.neuronios.length){
+      if(dados.length != (this.entrada.neuronios.length-BIAS)){
          throw new IllegalArgumentException("As dimensões dos dados de entrada com os neurônios de entrada da rede não são iguais");
       }
 
       //entrada
-      for(i = 0; i < this.qtdNeuroniosEntrada; i++){
+      for(i = 0; i < (this.entrada.neuronios.length-BIAS); i++){
          this.entrada.neuronios[i].saida = dados[i];
       }
 
@@ -118,7 +193,7 @@ public class RedeNeural implements Cloneable, Serializable{
          if(i == 0) camadaAnterior = this.entrada;
          else camadaAnterior = this.ocultas[i-1];
 
-         for(j = 0; j < camadaAtual.neuronios.length; j++){//percorrer cada neuronio da camada atual
+         for(j = 0; j < camadaAtual.neuronios.length-BIAS; j++){//percorrer cada neuronio da camada atual
             //saída é o somatorio dos pesos com os valores dos neuronios
             //aplicado na função de ativação
             soma = 0.0;
@@ -126,7 +201,6 @@ public class RedeNeural implements Cloneable, Serializable{
                soma += camadaAnterior.neuronios[k].saida * camadaAnterior.neuronios[k].pesos[j];
             }
             camadaAtual.neuronios[j].entrada = soma;
-            soma += BIAS;
             camadaAtual.neuronios[j].saida = funcaoAtivacao(soma);
          }
       }
@@ -146,70 +220,149 @@ public class RedeNeural implements Cloneable, Serializable{
    }
 
    
-   //adaptar para multiplas saídas
-   //separar os parametros para dados e classes
-   public double calcularPrecisao(double[][] dados){
-      double precisao = 0;
+   /**
+    * Calcula a precisão de saída da rede de acordo com os dados fornecidos.
+    * O cálculo é feito comparando diretamente o valor de saída da rede com a saída fornecida, então
+    * o uso desse método pode não ser apropriado para aplicações onde as saídas são valores contínuos.
+    * @param dados matriz com os dados de entrada.
+    * @param saida matriz com os dados de saída.
+    * @return precisão obtida com base nos dados fornecidos.
+    * @throws IllegalArgumentException se o tamanho dos dados de entrada for diferente do tamanho dos neurônios de entrada, sem contar os bias.
+    * @throws IllegalArgumentException se o tamanho dos dados de saída for diferente do tamanho dos neurôniosde de saída.
+    */
+   public double calcularPrecisao(double[][] dados, double[][] saida){
+      if(dados[0].length != this.entrada.neuronios.length-BIAS){
+         throw new IllegalArgumentException("Incompatibilidade entre os dados de entrada e os neurônios de entrada da rede");
+      }
+      if(saida[0].length != this.saida.neuronios.length){
+         throw new IllegalArgumentException("Incompatibilidade entre os dados de saída e os neurônios de saída da rede");
+      }
 
-      double[] dados_treino = new double[dados[0].length-1];
-      double[] classe_treino = new double[1];
+      double[] dadosEntrada = new double[dados[0].length];//tamanho das colunas dos dados de entrada
+      double[] dadosSaida = new double[saida[0].length];// tamanho das colunas dos dados de saída
+      double precisao = 0;
       int acertosTotais = 0;
       int acertosSaida = 0;
 
-      for(int i = 0; i < dados.length; i++){
-         dados_treino[0] = dados[i][0];
-         dados_treino[1] = dados[i][1];
-         dados_treino[2] = dados[i][2];
-         classe_treino[0]= dados[i][3];
-
-         this.calcularSaida(dados_treino);
-
-         for(int j = 0; j < this.saida.neuronios.length; j++){
-            if(this.saida.neuronios[j].saida == classe_treino[j]){
-               acertosSaida ++;
-            }
+      for(int i = 0; i < dados.length; i++){//percorrer linhas dos dados
+         for(int j = 0; j < dados[0].length; j++){//preencher dados de entrada
+            dadosEntrada[j] = dados[i][j];
          }
-         
-         if(acertosSaida == (this.saida.neuronios.length)) acertosTotais++;
+         for(int j = 0; j < saida[0].length; j++){//preencher dados de saída desejada
+            dadosSaida[j] = saida[i][j];
+         }
 
+         this.calcularSaida(dadosEntrada);
+         for(int k = 0; k < this.saida.neuronios.length; k++){
+            if(this.saida.neuronios[k].saida == dadosSaida[k]) acertosSaida ++;
+         }
+         if(acertosSaida == this.saida.neuronios.length) acertosTotais++;
       }
 
-      precisao = (double) acertosTotais/dados.length;
-      return (precisao*100);
+      precisao = (double)(acertosTotais/dados.length);
+      return precisao;
    }
 
 
    /**
-    * em teste.
+    * Calcula a função de custo baseada nos dados de entrada e na saída esperada para eles por meio do erro médio quadrado.
+    * @param dados matriz de dados de entrada.
+    * @param saida matriz dos dados de saída.
+    * @return valor de custo da rede.
+    * @throws IllegalArgumentException se o tamanho dos dados de entrada for diferente do tamanho dos neurônios de entrada, sem contar os bias.
+    * @throws IllegalArgumentException se o tamanho dos dados de saída for diferente do tamanho dos neurôniosde de saída.
     */
-   public void treinar(double[][] dados, double[] saida, int epochs){
-      double[] dados_treino = new double[dados[0].length];
-      double[] saida_treino = new double[1];
+   public double funcaoDeCusto(double[][] dados, double[][] saida){
+      if(dados[0].length != this.entrada.neuronios.length-BIAS){
+         throw new IllegalArgumentException("Incompatibilidade entre os dados de entrada e os neurônios de entrada da rede");
+      }
+      if(saida[0].length != this.saida.neuronios.length){
+         throw new IllegalArgumentException("Incompatibilidade entre os dados de saída e os neurônios de saída da rede");
+      }
 
-      int i, j, k;
-      for(i = 0; i < epochs; i++){
-         
-         for(j = 0; j < dados[0].length; j++){//percorrer as linhas dos dados
-            for(k = 0; k < dados.length; k++){//percorrer as colunas dos dados
-               dados_treino[k] = dados[j][k];
-            }
-            saida_treino[0] = saida[j];
-            backpropagation(dados_treino, saida_treino);
+      double custo = 0.0;
+      double[] dados_entrada = new double[dados[0].length];//tamanho das colunas da entrada
+      double[] dados_saida = new double[saida[0].length];//tamanho de colunas da saída
+
+      for(int i = 0; i < dados.length; i++){//percorrer as linhas da entrada
+         for(int j = 0; j < this.entrada.neuronios.length; j++){//passar os dados para a entrada da rede
+            dados_entrada[j] = dados[i][j];
          }
+         for(int j = 0; j < this.saida.neuronios.length; j++){//passar os dados de saída desejada para o vetor
+            dados_saida[j] = saida[i][j];
+         }
+
+         //calcular saída com base nos dados passados
+         this.calcularSaida(dados_entrada);
+
+         //calcular custo com base na saída
+         for(int k = 0; k < this.saida.neuronios.length; k++){
+            custo += Math.pow((dados_saida[k] - this.saida.neuronios[k].saida), 2);
+         }
+      }
+
+      custo /= dados.length;
+
+      return custo;
+   }
+
+
+   /**
+    * <p><strong>Em teste<strong></p>
+    * Treina a rede com uso do método Backpropagation.
+    * @param dados matriz de dados de entrada.
+    * @param saida matriz de dados de saída.
+    * @param epochs quantidade de épocas do treino.
+    * @throws IllegalArgumentException se o tamanho dos dados de entrada for diferente do tamanho dos neurônios de entrada, sem contar os bias.
+    * @throws IllegalArgumentException se o tamanho dos dados de saída for diferente do tamanho dos neurôniosde de saída.
+    * @throws IllegalArgumentException se o valor de epochs for menor que um.
+    */
+   public void treinar(double[][] dados, double[][] saida, int epochs){
+      if(dados[0].length != this.entrada.neuronios.length-BIAS){
+         throw new IllegalArgumentException("Incompatibilidade entre os dados de entrada e os neurônios de entrada da rede");
+      }
+      if(saida[0].length != this.saida.neuronios.length){
+         throw new IllegalArgumentException("Incompatibilidade entre os dados de saída e os neurônios de saída da rede");
+      }
+      if(epochs < 1){
+         throw new IllegalArgumentException("O valor de epochs não pode ser menor que um");
+      }
+
+      double[] dadosEntrada = new double[dados[0].length];//tamanho de colunas da entrada
+      double[] dadosSaida = new double[saida[0].length];//tamanho de colunas da saída
+
+      for(int i = 0; i < epochs; i++){//quantidade de épocas
+
+         for(int j = 0; j < dados.length; j++){//percorrer linhas dos dados
+
+            for(int k = 0; k < dados[0].length; k++){//preencher dados de entrada
+               dadosEntrada[k] = dados[j][k];
+            }
+            for(int k = 0; k < dadosSaida.length; k++){//preencher dados de saída
+               dadosSaida[k] = saida[j][k];
+            }
+
+            this.backpropagation(dadosEntrada, dadosSaida);//aplicar treino
+         }      
       }
    }
 
 
    /**
-    * em teste,
-    * as vezes gera NaN nos erros.
-    * @param dados
-    * @param saidaEsperada
+    * <strong>Em teste</strong>
+    * Retropropaga o erro da rede de acorodo com o dado aplicado e a saída esperada, depois
+    * corrige os pesos com a técnica de gradiente descendente.
+    * @param dados array com os dados de entrada.
+    * @param saidaEsperada array com as saídas esperadas
+    * @throws IllegalArgumentException se o tamanho dos dados de entrada for diferente do tamanho dos neurônios de entrada, sem contar os bias.
+    * @throws IllegalArgumentException se o tamanho dos dados de saída for diferente do tamanho dos neurôniosde de saída.
     */
    public void backpropagation(double[] dados, double[] saidaEsperada){
+      if(dados.length != (this.entrada.neuronios.length-BIAS)){
+         throw new IllegalArgumentException("O tamanho dos dados de entrada não corresponde ao tamaho dos neurônios de entrada da rede, com exceção dos bias");
+      }
       if(saidaEsperada.length != this.saida.neuronios.length){
-         System.out.println("imcompatibilidade de dimensões");
-         return;
+         throw new IllegalArgumentException("O tamanho dos dados de saída não corresponde ao tamaho dos neurônios de saída da rede");
       }
 
       //calcular saída para aplicar o erro
@@ -243,6 +396,7 @@ public class RedeNeural implements Cloneable, Serializable{
       //são apenas os dados 
 
       //ATUALIZANDO OS PESOS --------------------------------
+   
       //atualização dos pesos da saída
       for(i = 0; i < this.saida.neuronios.length; i++){
          Neuronio neuronio = this.saida.neuronios[i];
@@ -268,43 +422,7 @@ public class RedeNeural implements Cloneable, Serializable{
    }
 
 
-   /**
-    * Define a função de ativação que a rede usará nos neurônios das camadas ocultas e na camada
-    * de saída, por padrão será usado ReLu e ReLu derivada, respectivamente.
-    * Segue a lista das funções disponíveis:
-    * <ul>
-    *    <li> 1 - ReLu. </li>
-    *    <li> 2 - ReLu derivada. </li>
-    *    <li> 3 - Sigmoide. </li>
-    *    <li> 4 - Sigmoid derivada .</li>
-    *    <li> 5 - Tangente hiperbólica. </li>
-    *    <li> 6 - Tangente hiperbólica derivada. </li>
-    *    <li> 7 - Leaky ReLu. </li>
-    * </ul>
-    * @param ocultas função de ativação das camadas ocultas
-    * @param saida função de ativação da ultima camada oculta para a saída
-    */
-   public void configurarFuncaoAtivacao(int ocultas, int saida){
-      if(ocultas < 1 || ocultas > 7) funcaoAtivacao = 1;
-      if(saida < 1 || saida > 7) funcaoAtivacaoSaida = 2;
-
-      funcaoAtivacao = ocultas;
-      funcaoAtivacaoSaida = saida;
-   }
-
-
-   /**
-    * Configura o valor de alcance dos pesos das ligações de cada neurônio da rede. O valor
-    * padrão de alcance dos pesos é de 100, significa dizer que os pesos gerados podem variar entre -100 e 100.
-    * <p> O valor de alcance <strong>NÃO</strong> deve ser menor ou igual a zero. </p>
-    * @param alcancePeso novo valor de alcance dos pesos
-    */
-   public void configurarAlcancePeso(double alcancePeso){
-      this.alcancePeso = alcancePeso;
-   }
-
-
-   //FUNÇÕES DE ATIVAÇÃO
+   //FUNÇÕES DE ATIVAÇÃO---------------------------
    private double funcaoAtivacao(double valor){
       if(funcaoAtivacao == ativacaoRelu) return relu(valor);
       if(funcaoAtivacao == ativacaoReluDx) return reluDx(valor);
@@ -387,32 +505,6 @@ public class RedeNeural implements Cloneable, Serializable{
       if(valor > 0) return valor;
       else return ((0.001) * valor);
    }
-
-
-   //implementar função de ativação argmax para a saída da rede
-   @SuppressWarnings("unused")
-   private void argmax(){
-      double maiorValor = 0;
-      int i, indiceMaiorSaida = 0;
-
-      for(i = 0; i < this.saida.neuronios.length; i++){
-         if(i == 0){
-            maiorValor = this.saida.neuronios[i].entrada;
-            indiceMaiorSaida = i;
-         
-         }else if(this.saida.neuronios[i].entrada > maiorValor){
-            maiorValor = this.saida.neuronios[i].entrada;
-            indiceMaiorSaida = i;
-         }
-      }
-
-      for(i = 0; i < this.saida.neuronios.length; i++){
-         if(i == indiceMaiorSaida) this.saida.neuronios[i].saida = 1;
-         else this.saida.neuronios[i].saida = 0;
-      }
-
-   }
-
 
 
    /**
