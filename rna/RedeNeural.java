@@ -18,7 +18,7 @@ public class RedeNeural implements Cloneable, Serializable{
 
    private int BIAS = 0;
    private double alcancePeso = 100;
-   private double TAXA_APRENDIZAGEM = 0.00001;
+   private double TAXA_APRENDIZAGEM = 0.1;
 
    //padronizar uso das funções de ativação
    private final int ativacaoRelu = 1;
@@ -40,14 +40,14 @@ public class RedeNeural implements Cloneable, Serializable{
     *    baseia em uma camada de entrada, várias camadas ocultas mas com o mesmo 
     *    número de neurônios cada, e uma camada de saída.
     * </p>
+    * os valores de todos os parâmetros pedidos <strong>NÃO devem</strong>
+    * ser menores que 1.
     * <p>
     *    Após instanciar o modelo, é necessário compilar por meio da função "compilar()", certifique-se 
     *    de configurar as propriedades da rede por meio das funções de configuração fornecidas como, alcance
-    *    dos pesos iniciais, funções de ativação e quantidade de bias. Caso não use nenhuma das funções de 
-    *    configuração, a rede será compilada com os valores padrão.
+    *    dos pesos iniciais, funções de ativação e quantidade de bias. Caso não seja usada nenhuma das funções 
+    *    de configuração, a rede será compilada com os valores padrão.
     * </p>
-    * os valores de todos os parâmetros pedidos <strong>NÃO devem</strong>
-    * ser menores que 1.
     * @author Thiago Barroso, acadêmico de Engenharia da Computação pela Universidade Federal do Pará, Campus Tucuruí.
     * @param qtdNeuroniosEntrada quantidade de neurônios na camada de entrada.
     * @param qtdNeuroniosOcultas quantidade de neurônios das camadas ocultas.
@@ -96,16 +96,16 @@ public class RedeNeural implements Cloneable, Serializable{
    /**
     * Define a função de ativação que a rede usará nos neurônios das camadas ocultas 
     * e na camada de saída.
-    * <p>O valor padrão é 1 e 2.</p>
-    * Segue a lista das funções disponíveis:
+    * <p>Os valores padrão são 1 e 2.</p>
+    * Funções de ativação disponíveis:
     * <ul>
-    *    <li> 1 - ReLu. </li>
-    *    <li> 2 - ReLu derivada. </li>
+    *    <li> 1 - ReLU. </li>
+    *    <li> 2 - ReLU derivada. </li>
     *    <li> 3 - Sigmoide. </li>
     *    <li> 4 - Sigmoid derivada .</li>
     *    <li> 5 - Tangente hiperbólica. </li>
     *    <li> 6 - Tangente hiperbólica derivada. </li>
-    *    <li> 7 - Leaky ReLu. </li>
+    *    <li> 7 - Leaky ReLU. </li>
     * </ul>
     * @param ocultas função de ativação das camadas ocultas.
     * @param saida função de ativação da ultima camada oculta para a saída.
@@ -120,12 +120,29 @@ public class RedeNeural implements Cloneable, Serializable{
 
 
    /**
+    * Define o novo valor de taxa de aprendizagem da rede. O valor é usado durante o método de treino.
+    * Certifique-se de não usar valores muito altos ou muito baixos para não gerar valores inesperados 
+    * durante o treino.
+    * <p>O valor padrão é 0.1</p>
+    * @param taxaAprendizagem novo valor de taxa de aprendizagem.
+    * @throws IllegalArgumentException caso o novo valor de taxa de aprendizagem seja igual a zero.
+    */
+   public void configurarTaxaAprendizagem(double taxaAprendizagem){
+      if(taxaAprendizagem == 0){
+         throw new IllegalArgumentException("O valor da nova taxa de aprendizagem não pode ser igual a zero.");
+      }
+      this.TAXA_APRENDIZAGEM = taxaAprendizagem;
+   }
+
+
+   /**
     * Compila o modelo de rede baseado nos valores fornecidos. Antes da compilação é possível
     * informar alguns valores ajustáveis na inicialização da rede, como:
     * <ul>
     *    <li>Valor máximo e mínimo para os pesos gerados aleatoriamente.</li>
     *    <li>Funções de ativação para as camadas ocultas e para a camada de saída.</li>
-    *    <li>Quantidade de neurônios como atuando como bias.</li>
+    *    <li>Quantidade de neurônios atuando como bias.</li>
+    *    <li>Taxa de aprendizagem.</li>
     * </ul>
     * <p>
     *    Caso nenhuma configuração seja feita, a rede será inicializada com os valores padrão. 
