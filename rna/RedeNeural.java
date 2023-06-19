@@ -108,7 +108,7 @@ public class RedeNeural implements Cloneable, Serializable{
     *    <li> 7 - Leaky ReLU. </li>
     * </ul>
     * @param ocultas função de ativação das camadas ocultas.
-    * @param saida função de ativação da ultima camada oculta para a saída.
+    * @param saida função de ativação da camada de saída.
     * @throws IllegalArgumentException se os valores fornecidos forem menores que 1 ou maiores que 7.
     */
    public void configurarFuncaoAtivacao(int ocultas, int saida){
