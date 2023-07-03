@@ -39,4 +39,8 @@ Depois de ter instanciado a rede num objeto, e ter feito ou não as configuraç�
 ``` 
 rede.compilar();
 ```
-Agora que o modelo foi criado, pode ser usado.
+Agora que o modelo foi criado, pode ser usado para fazer as suas predições com a função de calcular saída:
+*É importante destacar que o modelo recebe um array/vetor com os dados para a entrada, e que esses dados devem ser do tipo double*
+``` 
+rede.calcularSaída(dados);
+```
