@@ -13,3 +13,30 @@ saída usando vetor e por aí vai.</p>
   ainda e foi criado numa estrutura diferente da atual), principalmente em estruturas de evolução genética(que foi o uso que 
   fiz até o momento), já conta com algumas opções de modificação de hiperparâmetros e funções de ativação, além de opções de 
   salvamento e leitura para arquivos externos.</p>
+
+# Exemplo de uso:
+Para criar a rede, é preciso informar a estrutura que ela irá assumir, nesse modelo para criarmos uma rede precisamos informar a quantidade de neurônios de cada camada e a quantidade de camadas ocultas, como por exemplo, uma rede com 1 neurônio para a camada de entrada, 2 neurônios para as camadas ocultas, 3 neurônios para a camada de saída e 4 camadas ocultas:
+``` 
+RedeNeural rede = new RedeNeural(1, 2, 3, 4);
+```
+Após instanciar a rede, podem ser usadar funções de configuração simples para mudar o comportamento do modelo, como por exemplo, definir as funções de ativação usadas:
+``` 
+rede.configurarFuncaoAtivacao(1, 2);
+```
+Além de definir o valor de geração dos pesos aleatórios na hora da compilação:
+``` 
+rede.configurarAlcancePesos(10);
+```
+Bem como o uso do bias como neurônio adicional em cada camada, com exceção da saída:
+``` 
+rede.configurarBias(true);
+```
+Por fim também configurar o valor da taxa de aprendizagem da rede, que será usado no algoritmo de treino:
+``` 
+rede.configurarTaxaAprendizagem(0.01);
+```
+Depois de ter instanciado a rede num objeto, e ter feito ou não as configurações iniciais, o modelo precisa ser compilado:
+``` 
+rede.compilar();
+```
+Agora que o modelo foi criado, pode ser usado.
