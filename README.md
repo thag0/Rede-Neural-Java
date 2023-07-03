@@ -44,4 +44,5 @@ Agora que o modelo foi criado, pode ser usado para fazer as suas predições com
 rede.calcularSaída(dados);
 ```
 *É importante destacar que o modelo recebe um array/vetor com os dados para a entrada, e que esses dados devem ser do tipo double*
+
 Bom uso.
