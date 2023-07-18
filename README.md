@@ -28,30 +28,27 @@ Uma alternativa na hora de instanciar a rede é usar como parâmetro um array co
 int[] arquitetura = {1, 2, 2, 2, 2, 3};
 RedeNeural rede = new RedeNeural(arquitetura);
 ```
-Após instanciar a rede, podem ser usadas funções de configuração simples para mudar o comportamento do modelo, como por exemplo, definir as funções de ativação usadas:
+Após instanciar a rede, podem ser usadas funções de configuração simples para mudar o comportamento do modelo, essas são as configurações disponíveis atualmente:
 ``` 
 rede.configurarFuncaoAtivacao(1, 2);
-```
-Além de definir o valor de geração dos pesos aleatórios na hora da compilação:
-``` 
 rede.configurarAlcancePesos(1.0);
-```
-Bem como o uso do bias como neurônio adicional em cada camada, com exceção da saída:
-``` 
 rede.configurarBias(true);
-```
-Por fim também configurar o valor da taxa de aprendizagem da rede, que será usado no algoritmo de treino:
-``` 
 rede.configurarTaxaAprendizagem(0.01);
 ```
-Depois de ter instanciado a rede num objeto, e ter feito ou não as configurações iniciais, o modelo precisa ser compilado:
+Depois de ter instanciado a rede num objeto, e ter feito ou não as configurações iniciais, o modelo precisa ser compilado da seguinte forma:
 ``` 
 rede.compilar();
 ```
+
 Agora que o modelo foi criado, pode ser usado para fazer as suas predições com a função de calcular saída:
 ``` 
 rede.calcularSaída(dados);
 ```
 *É importante destacar que o modelo recebe um array/vetor com os dados para a entrada, e que esses dados devem ser do tipo double*
+
+Após ter calculado a saída, para obter a saída dos neurônios, pode ser usado o método que devolve o valor de saída de cada neuônio da última camada da rede:
+```
+int[] saidaRede = rede.obterSaida();
+```
 
 Bom uso.
