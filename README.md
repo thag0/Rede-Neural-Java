@@ -19,21 +19,21 @@
 </p>
 
 # Exemplo de uso
-Para criar a rede, é preciso informar a estrutura que ela irá assumir, nesse modelo para criarmos uma rede precisamos informar a quantidade de neurônios de cada camada e a quantidade de camadas ocultas, como por exemplo, uma rede com 1 neurônio para a camada de entrada, 2 neurônios para as camadas ocultas, 3 neurônios para a camada de saída e 4 camadas ocultas:
-``` 
-RedeNeural rede = new RedeNeural(1, 2, 3, 4);
+Para criar a rede, é preciso informar a estrutura que ela irá assumir, nesse modelo para criarmos uma rede precisamos informar a arquitetura dela passando um array contendo os elementos de cada camada. É obrigatório que exista pelo menos uma camada de entrada, uma camada oculta e uma camada de saída e pelo menos um neuronio em cada camada, como mostrado no exemplo a seguir:
 ```
-Uma alternativa na hora de instanciar a rede é usar como parâmetro um array contendo os valores dos neurônios das camadas, seguindo o mesmo exemplo anterior:
-```
-int[] arquitetura = {1, 2, 2, 2, 2, 3};
+int[] arquitetura = {1, 2, 3, 4};
 RedeNeural rede = new RedeNeural(arquitetura);
 ```
 Após instanciar a rede, podem ser usadas funções de configuração simples para mudar o comportamento do modelo, essas são as configurações disponíveis atualmente:
 ``` 
-rede.configurarFuncaoAtivacao(1, 2);
 rede.configurarAlcancePesos(1.0);
 rede.configurarBias(true);
 rede.configurarTaxaAprendizagem(0.01);
+```
+A única excessão a essa regra é a configuração da função de ativação das camadas, nela é preciso que o modelo esteja compilado previamente. Existem duas formas de configurar as funções de ativação, em uma é definido apenas o valor da função que será usada e ela será aplicada em todas as camadas, em outra precisamos específicar o índice da camada que queremos configurar a função de ativação, como mostrado no exemplo:
+```
+rede.configurarFuncaoAtivacao(2); //configurando a função de ativação de todas as camadas
+rede.configurarFuncaoAtivacao(1, 2); //configurando a função de ativação de uma camada específica
 ```
 Depois de ter instanciado a rede num objeto, e ter feito ou não as configurações iniciais, o modelo precisa ser compilado da seguinte forma:
 ``` 
