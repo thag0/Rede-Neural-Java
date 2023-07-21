@@ -3,6 +3,7 @@
 <p><strong>Modelo de rede neural artificial multilayer perceptron criado por mim.</strong></p>
 
 ![rede](https://github.com/thag0/Rede-Neural-Java/assets/91092364/f5338b8b-c708-45b5-b4fc-68cf499a7d97)
+
 *Exemplo de estrutura da rede*
 
 <p>
