@@ -41,10 +41,13 @@ rede.configurarFuncaoAtivacao(1, 2); //configurando a função de ativação de 
 ```
 
 # Compilação
-Depois de ter instanciado a rede num objeto, e ter feito ou não as configurações iniciais, o modelo precisa ser compilado da seguinte forma:
-``` 
-rede.compilar();
-```
+<p>
+  Depois de ter instanciado a rede num objeto, e ter feito ou não as configurações iniciais, o modelo precisa ser compilado da seguinte forma:
+  ``` 
+  rede.compilar();
+  ``` 
+</p>
+
 
 # Treino e uso
 Agora que o modelo foi criado, pode ser usado para fazer as suas predições com a função de calcular saída:
