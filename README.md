@@ -4,7 +4,7 @@
 
 ![rede](https://github.com/thag0/Rede-Neural-Java/assets/91092364/f5338b8b-c708-45b5-b4fc-68cf499a7d97)
 
-*Exemplo de estrutura da rede*
+**-Exemplo de estrutura da rede**
 
 <p>
 Minha ideia é criar uma biblioteca ou framework baseado nesse modelo apresentado, tentando torná-lo o mais flexível possível para todo problema que possa ser resolvido com uso das Redes Neurais Artificiais.
@@ -55,7 +55,7 @@ Com o modelo criado e compilado, podemos usá-lo para fazer predições com a fu
 ``` 
 rede.calcularSaida(dados);
 ```
-*É importante destacar que o modelo recebe um array/vetor com os dados para a entrada, e que esses dados devem ser do tipo double*
+*-É importante destacar que o modelo recebe um array/vetor com os dados para a entrada, e que esses dados devem ser do tipo double*
 
 <p>
 O modelo criado pode ser treinado usando uma técnica de diferenças finitas, ela não é nada eficiente se comparada com o backpropagation mas funciona bem em modelos simples. Nele é preciso informar algumas informações que são: entrada dos dados de treino, saída dos dados de treino (classes/classifiçaões), um valor de perturbação que deve ser pequeno, quantidade de épocas de treino e o custo mínimo desejado, respectivamente.
@@ -64,7 +64,7 @@ O modelo criado pode ser treinado usando uma técnica de diferenças finitas, el
 ``` 
 rede.diferencaFinita(dadosEntrada, dadosSaida, 0.001, 1000, 0.001);
 ```
-*Para o treino, tanto os dados de entrada e saída devem ser matrizes bidimesionais do tipo double*
+*-Para o treino, tanto os dados de entrada e saída devem ser matrizes bidimesionais do tipo double*
 
 Após ter calculado a saída, para obter a saída dos neurônios, pode ser usado o método que devolve o valor de saída de cada neuônio da última camada da rede:
 ```
