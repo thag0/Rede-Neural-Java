@@ -67,4 +67,19 @@ Após ter calculado a saída, para obter a saída dos neurônios, pode ser usado
 int[] saidaRede = rede.obterSaida();
 ```
 
+# Salvando e lendo arquivos
+Uma opção que fiz foi serializar a rede num arquivo externo, consequentemente também fiz uma funcionalidade de leitura para arquivos externos, a leitura e salvamento preserva toda a arquitetura da rede e o mais importante, seus pesos.
+
+Para salvar a rede num arquivo externo, é necessário especificar o caminho onde o arquivo será salvo, esse caminho deve incluir tanto o nome do arquivo quanto a extensão dele
+```
+String caminho = "./rede-salva.dat";
+rede.salvarArquivoRede(caminho);
+```
+
+Para ler o arquivo salvo, é necessário informar o caminho onde o arquivo está localizado, o caminho deve incluir o nome e a extensão do arquivo.
+```
+String caminho = "./rede-salva.dat";
+rede.lerArquivoRede(caminho);
+```
+
 Bom uso!
