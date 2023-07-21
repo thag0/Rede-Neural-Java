@@ -3,21 +3,20 @@
 <p><strong>Modelo de rede neural artificial multilayer perceptron criado por mim.</strong></p>
 
 ![rede](https://github.com/thag0/Rede-Neural-Java/assets/91092364/f5338b8b-c708-45b5-b4fc-68cf499a7d97)
+*Exemplo de estrutura da rede*
 
 <p>
-  Minha ideia é criar uma biblioteca ou framework baseado nesse modelo apresentado, tentando torná-lo o mais flexível 
-  possível para todo problema que possa ser resolvido com uso das Redes Neurais Artificiais.
+Minha ideia é criar uma biblioteca ou framework baseado nesse modelo apresentado, tentando torná-lo o mais flexível possível para todo problema que possa ser resolvido com uso das Redes Neurais Artificiais.
 </p>
 
 <p>
-  Ainda tenho ideias de implementações futuras para a melhora desse modelo, principalmente na hora de treinar usando 
-  o algoritmo backpropagation, formas mais elaboradas e variadas de funções de ativação, arquiteturas mais flexíveis e por aí vai.
+Ainda tenho ideias de implementações futuras para a melhora desse modelo, principalmente na hora de treinar usando o algoritmo backpropagation, formas mais elaboradas e variadas de funções de ativação, arquiteturas mais flexíveis e por aí vai.
 </p>
 
 <p>
-  No geral o modelo já pode ser usado em aplicações mas que não usem o método de treino por enquanto, uma alternativa que fiz foi implementar o treino usando uma técnica 
-  conhecida como Diferenças Finitas, além disso o algoritmo já conta com algumas opções de modificação de hiperparâmetros e funções de ativação, além de opções de 
-  salvamento e leitura para arquivos externos.
+No geral o modelo já pode ser usado em aplicações mas que não usem o método de treino por enquanto, uma alternativa que fiz foi implementar o treino usando uma técnica 
+conhecida como Diferenças Finitas, além disso o algoritmo já conta com algumas opções de modificação de hiperparâmetros e funções de ativação, além de opções de 
+salvamento e leitura para arquivos externos.
 </p>
 
 # Criando uma instância da rede
@@ -35,7 +34,7 @@ rede.configurarBias(true);
 rede.configurarTaxaAprendizagem(0.01);
 ```
 <p>
-  A única excessão a essa regra é a configuração da função de ativação das camadas, nela é preciso que o modelo esteja compilado previamente. Existem duas formas de configurar   as funções de ativação, em uma é definido apenas o valor da função que será usada e ela será aplicada em todas as camadas, em outra precisamos específicar o índice da camada   que queremos configurar a função de ativação, como mostrado no exemplo:  
+A única excessão a essa regra é a configuração da função de ativação das camadas, nela é preciso que o modelo esteja compilado previamente. Existem duas formas de configurar as funções de ativação, em uma é definido apenas o valor da função que será usada e ela será aplicada em todas as camadas, em outra precisamos específicar o índice da camada que queremos configurar a função de ativação, como mostrado no exemplo:
 </p>
 
 ```
@@ -53,12 +52,12 @@ rede.compilar();
 # Treino e uso
 Com o modelo criado e compilado, podemos usá-lo para fazer predições com a função de calcular saída:
 ``` 
-rede.calcularSaída(dados);
+rede.calcularSaida(dados);
 ```
 *É importante destacar que o modelo recebe um array/vetor com os dados para a entrada, e que esses dados devem ser do tipo double*
 
 <p>
-  O modelo criado pode ser treinado usando uma técnica de diferenciaçoes finitas, ela não é nada eficiente se comparada com o backpropagation mas funciona bem em modelos         simples. Nele é preciso informar algumas informações que são: entrada dos dados de treino, saída dos dados de treino (classes), um valor de perturbação que deve ser pequeno,   quantidade de épocas de treino e o custo mínimo desejado, respectivamente.   
+O modelo criado pode ser treinado usando uma técnica de diferenças finitas, ela não é nada eficiente se comparada com o backpropagation mas funciona bem em modelos simples. Nele é preciso informar algumas informações que são: entrada dos dados de treino, saída dos dados de treino (classes/classifiçaões), um valor de perturbação que deve ser pequeno, quantidade de épocas de treino e o custo mínimo desejado, respectivamente.
 </p>
 
 ``` 
