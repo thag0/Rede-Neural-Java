@@ -41,12 +41,11 @@ rede.configurarFuncaoAtivacao(1, 2); //configurando a função de ativação de 
 ```
 
 # Compilação
-<p>
-  Depois de ter instanciado a rede num objeto, e ter feito ou não as configurações iniciais, o modelo precisa ser compilado da seguinte forma:
-  ``` 
-  rede.compilar();
-  ``` 
-</p>
+
+Depois de ter instanciado a rede num objeto, e ter feito ou não as configurações iniciais, o modelo precisa ser compilado da seguinte forma:
+``` 
+rede.compilar();
+ ```
 
 
 # Treino e uso
@@ -56,10 +55,12 @@ rede.calcularSaída(dados);
 ```
 *É importante destacar que o modelo recebe um array/vetor com os dados para a entrada, e que esses dados devem ser do tipo double*
 
+
 O modelo criado pode ser treinado usando uma técnica de diferenciaçoes finitas, ela não é nada eficiente se comparada com o backpropagation mas funciona bem em modelos simples. Nele é preciso informar algumas informações que são: entrada dos dados de treino, saída dos dados de treino (classes), um valor de perturbação que deve ser pequeno, quantidade de épocas de treino e o custo mínimo desejado, respectivamente. 
 ``` 
 rede.diferencaFinita(dadosEntrada, dadosSaida, 0.001, 1000, 0.001);
 ```
+*Para o treino, tanto os dados de entrada e saída devem ser matrizes bidimesionais do tipo double*
 
 Após ter calculado a saída, para obter a saída dos neurônios, pode ser usado o método que devolve o valor de saída de cada neuônio da última camada da rede:
 ```
