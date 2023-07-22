@@ -61,7 +61,7 @@ rede.calcularSaida(dados);
 *É importante destacar que o modelo recebe um array/vetor com os dados para a entrada, e que esses dados devem ser do tipo double*
 
 <p>
-O modelo criado pode ser treinado usando uma técnica de diferenças finitas, ela não é nada eficiente se comparada com o backpropagation mas funciona bem em modelos simples. Nele é preciso informar algumas informações que são: entrada dos dados de treino, saída dos dados de treino (classes/classifiçaões), um valor de perturbação que deve ser pequeno, quantidade de épocas de treino e o custo mínimo desejado, respectivamente.
+O modelo criado pode ser treinado usando uma técnica de diferenças finitas, ela não é nada eficiente se comparada com o backpropagation mas funciona bem em modelos simples. Nele é preciso informar algumas informações que são: entrada dos dados de treino, saída dos dados de treino (classes/classifições), um valor de perturbação que deve ser pequeno, quantidade de épocas de treino e o custo mínimo desejado, respectivamente.
 </p>
 
 ``` 
