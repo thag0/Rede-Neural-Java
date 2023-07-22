@@ -39,8 +39,11 @@ A única excessão a essa regra é a configuração da função de ativação da
 </p>
 
 ```
-rede.configurarFuncaoAtivacao(2); //configurando a função de ativação de todas as camadas
-rede.configurarFuncaoAtivacao(rede.obterCamadaSaida(), 2); //configurando a função de ativação de uma camada específica, por exemplo a saída
+//configurando a função de ativação de todas as camadas
+rede.configurarFuncaoAtivacao(2);
+
+//configurando a função de ativação de uma camada específica, por exemplo a saída
+rede.configurarFuncaoAtivacao(rede.obterCamadaSaida(), 2);
 ```
 
 # Compilação
