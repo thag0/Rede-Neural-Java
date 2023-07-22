@@ -35,12 +35,12 @@ rede.configurarBias(true);
 rede.configurarTaxaAprendizagem(0.01);
 ```
 <p>
-A única excessão a essa regra é a configuração da função de ativação das camadas, nela é preciso que o modelo esteja compilado previamente. Existem duas formas de configurar as funções de ativação, em uma é definido apenas o valor da função que será usada e ela será aplicada em todas as camadas, em outra precisamos específicar o índice da camada que queremos configurar a função de ativação, como mostrado no exemplo:
+A única excessão a essa regra é a configuração da função de ativação das camadas, nela é preciso que o modelo esteja compilado previamente. Existem duas formas de configurar as funções de ativação, em uma é definido apenas o valor da função que será usada e ela será aplicada em todas as camadas, em outra precisamos específicar a camada que queremos configurar a função de ativação, como mostrado no exemplo:
 </p>
 
 ```
 rede.configurarFuncaoAtivacao(2); //configurando a função de ativação de todas as camadas
-rede.configurarFuncaoAtivacao(1, 2); //configurando a função de ativação de uma camada específica
+rede.configurarFuncaoAtivacao(rede.obterCamadaSaida(), 2); //configurando a função de ativação de uma camada específica, por exemplo a saída
 ```
 
 # Compilação
