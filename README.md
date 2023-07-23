@@ -11,7 +11,7 @@ Minha ideia é criar uma biblioteca ou framework baseado nesse modelo apresentad
 </p>
 
 <p>
-Ainda tenho ideias de implementações futuras para a melhora desse modelo, como formas mais elaboradas e variadas de funções de ativação, arquiteturas mais flexíveis e por aí vai.
+Ainda tenho ideias de implementações futuras para a melhora desse modelo, como formas mais elaboradas e variadas de funções de ativação, arquiteturas mais flexíveis e por aí vai. Talvez tentar encaixar a ideia de redes neurais convolucionais no futuro para abrir mais possibilidades ainda de uso
 </p>
 
 <p>
@@ -28,7 +28,13 @@ RedeNeural rede = new RedeNeural(arquitetura);
 ```
 
 # Configurações suportadas
-Após instanciar a rede, podem ser usadas funções de configuração simples para mudar o comportamento do modelo, essas são as configurações disponíveis atualmente:
+Após instanciar a rede, podem ser usadas funções de configuração simples para mudar o comportamento do modelo, dentre elas temos:
+
+- Configurar o alcance dos pesos iniciais da rede (que são aleatórios), o valor de alcance é espelhado para um valor negativo também, então se passarmos por exemplo 1.0, o valor aleatório gerado estará num intervalo entre -1.0 e 1.0;
+- Configurar uso do bias como neurônio adicional, se por algum motivo precise que a rede não tenha bias na sua arquiterura, pode ser facilmente removido;
+- Configurar valor da taxa de aprendizagem que será usado durante o treinamento, é muito importante definir um bom balanço entre o valor da taxa de aprendizagem junto com o valor de alcance dos pesos, visto que no começo do treinamento o valor de erros pode ser muito alto e acabar se tornando um NaN;
+
+Segue um exemplo com as configurações usando a biblioteca:
 ``` 
 rede.configurarAlcancePesos(1.0);
 rede.configurarBias(true);
