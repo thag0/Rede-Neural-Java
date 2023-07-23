@@ -15,7 +15,7 @@ Ainda tenho ideias de implementações futuras para a melhora desse modelo, como
 </p>
 
 <p>
-O modelo já pode ser usado em aplicações e possui um método de treino baseado no backpropagation, uma alternativa que fiz foi implementar o treino usando uma técnica 
+O modelo já pode ser usado em aplicações e possui dois métodos de treino baseados no backpropagation, uma alternativa que fiz foi implementar o treino usando uma técnica 
 conhecida como Diferenças Finitas, além disso o algoritmo já conta com algumas opções de modificação de hiperparâmetros e funções de ativação, além de opções de 
 salvamento e leitura para arquivos externos.
 </p>
@@ -61,21 +61,23 @@ rede.calcularSaida(dados);
 *É importante destacar que o modelo recebe um array/vetor com os dados para a entrada, e que esses dados devem ser do tipo double*
 
 <p>
- O modelo possui dois métodos de treino, o principal deles é aplicando o algoritmo Backpropagation e pode ser usado chamando a função de treino da rede, é necessário informar tantos os dados de entrada do treino quanto os dados de saída, além do número de épocas de treino, como mostrado no exemplo:
+O modelo possui três métodos de treino, o principal deles é aplicando o algoritmo Backpropagation e pode ser usado chamando a função de treino da rede, além disso também possui um treino baseado na técnica do gradiente estocástico, que tende a convergir mais rápido. Em ambos os casos é necessário informar tantos os dados de entrada do treino quanto os dados de saída, além do número de épocas de treino, como mostrado no exemplo:
 </p>
 
 ``` 
-rede.treinar(dadosEntrada, dadosSaida, epocas);
+rede.treinoBackpropagation(dadosEntrada, dadosSaida, epocas);
+rede.treinoGradienteEstocastico(dadosEntrada, dadosSaida, epocas);
+
 ```
 
 <p>
-O modelo criado pode ser treinado também usando uma técnica de diferenças finitas, ela não é nada eficiente se comparada com o backpropagation mas funciona bem em modelos simples. Nele é preciso informar algumas informações que são: entrada dos dados de treino, saída dos dados de treino (classes/classifições), um valor de perturbação que deve ser pequeno, quantidade de épocas de treino e o custo mínimo desejado, respectivamente.
+O modelo criado pode ser treinado também usando uma técnica de diferenças finitas, ela não é nada eficiente se comparada com o backpropagation e o gradiente mas funciona bem em modelos simples. Nele é preciso informar algumas informações que são: entrada dos dados de treino, saída dos dados de treino (classes/classifições), um valor de perturbação que deve ser pequeno, quantidade de épocas de treino e o custo mínimo desejado, respectivamente.
 </p>
 
 ``` 
 rede.diferencaFinita(dadosEntrada, dadosSaida, 0.001, 1000, 0.001);
 ```
-*-Para o treino, tanto os dados de entrada e saída devem ser matrizes bidimesionais do tipo double*
+*Para o treino, tanto os dados de entrada e saída devem ser matrizes bidimesionais do tipo double*
 
 Após ter calculado a saída, para obter a saída dos neurônios, pode ser usado o método que devolve o valor de saída de cada neuônio da última camada da rede:
 ```
