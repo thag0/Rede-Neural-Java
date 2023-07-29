@@ -65,6 +65,17 @@ public class Ativacoes{
    }
 
 
+   public static double swish(double x){
+      return (x * sigmoid(x));
+   }
+
+
+   public static double swishDx(double x){
+      double sig = sigmoid(x);
+      return (x * sig + sigmoidDx(x));
+  }
+
+
    public static double gelu(double x){
       return 0.5 * x * (1.0 + Math.tanh(Math.sqrt(2.0 / Math.PI) * (x + 0.044715 * Math.pow(x, 3))));      
    }

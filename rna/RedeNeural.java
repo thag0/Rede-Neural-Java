@@ -119,11 +119,12 @@ public class RedeNeural implements Cloneable, Serializable{
     *    <li>3 - Tangente Hiperbólica.</li>
     *    <li>4 - Leaky ReLU.</li>
     *    <li>5 - ELU.</li>
-    *    <li>6 - GELU.</li>
-    *    <li>7 - Linear.</li>
-    *    <li>8 - Seno.</li>
-    *    <li>9 - Argmax.</li>
-    *    <li>10 - Softmax.</li>
+    *    <li>6 - Swish.</li>
+    *    <li>7 - GELU.</li>
+    *    <li>8 - Linear.</li>
+    *    <li>9 - Seno.</li>
+    *    <li>10 - Argmax.</li>
+    *    <li>11 - Softmax.</li>
     * </ul>
     * @param camada camada que será configurada
     * @param funcaoAtivacao valor relativo a lista de ativações disponíveis.
@@ -147,11 +148,12 @@ public class RedeNeural implements Cloneable, Serializable{
     *    <li>3 - Tangente Hiperbólica.</li>
     *    <li>4 - Leaky ReLU.</li>
     *    <li>5 - ELU.</li>
-    *    <li>6 - GELU.</li>
-    *    <li>7 - Linear.</li>
-    *    <li>8 - Seno.</li>
-    *    <li>9 - Argmax.</li>
-    *    <li>10 - Softmax.</li>
+    *    <li>6 - Swish.</li>
+    *    <li>7 - GELU.</li>
+    *    <li>8 - Linear.</li>
+    *    <li>9 - Seno.</li>
+    *    <li>10 - Argmax.</li>
+    *    <li>11 - Softmax.</li>
     * </ul>
     * @param funcaoAtivacao valor relativo a lista de ativações disponíveis.
     * @throws IllegalArgumentException se o modelo não foi compilado previamente.
