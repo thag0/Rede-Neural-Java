@@ -36,7 +36,7 @@ public class RedeNeural implements Cloneable, Serializable{
    private int quantidadeOcultas;
 
    private double TAXA_APRENDIZAGEM = 0.01;
-   private double MOMENTUM = 0;
+   private double TAXA_MOMENTUM = 0;
    private int BIAS = 1;
    private double alcancePeso = 1.0;
    private boolean modeloCompilado = false;
@@ -144,7 +144,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * Normalmente esse valor fica entre 0 e 1, onde 0 significa que o momentum não terá efeito  e 1 
     * significa que o momentum terá o máximo de inércia, acumulando totalmente os gradientes anteriores. 
     * <p>
-    *    O valor padrão é 0.0, onde o momentum não é aplicado no treino.
+    *    O valor padrão é 0, onde o momentum não é aplicado no treino.
     * </p>
     * @param momentum novo valor de momentum.
     * @throws IllegalArgumentException se o valor de momentum for menor que zero.
@@ -153,7 +153,7 @@ public class RedeNeural implements Cloneable, Serializable{
       if(momentum < 0){
          throw new IllegalArgumentException("O valor de momentum não pode ser menor que zero.");
       }
-      this.MOMENTUM = momentum;
+      this.TAXA_MOMENTUM = momentum;
    }
 
 
@@ -292,7 +292,7 @@ public class RedeNeural implements Cloneable, Serializable{
     */
    public void calcularSaida(double[] dados){
       modeloValido();
-
+      
       if(dados.length != (this.entrada.neuronios.length-BIAS)){
          throw new IllegalArgumentException("As dimensões dos dados de entrada com os neurônios de entrada da rede não são iguais");
       }
@@ -577,10 +577,8 @@ public class RedeNeural implements Cloneable, Serializable{
             
             Neuronio neuronio = camadaAtual.neuronios[j];
             for(int k = 0; k < neuronio.pesos.length; k++){//percorrer pesos do neurônio atual
-               // neuronio.pesos[k] += (TAXA_APRENDIZAGEM * neuronio.erro * camadaAnterior.neuronios[k].saida);
-               //atualização com momentum
                double gradiente = TAXA_APRENDIZAGEM * neuronio.erro * camadaAnterior.neuronios[k].saida;
-               neuronio.momentum[k] = (MOMENTUM * neuronio.momentum[k]) + gradiente;
+               neuronio.momentum[k] = (TAXA_MOMENTUM * neuronio.momentum[k]) + gradiente;
                neuronio.pesos[k] += neuronio.momentum[k];
             }
          }
@@ -767,8 +765,8 @@ public class RedeNeural implements Cloneable, Serializable{
       if(this.BIAS == 1) buffer += espacamento + "Bias = " + "true\n";
       else buffer += espacamento + "Bias: " + "false\n";
 
-      //taxa de aprendizagem
-      buffer += espacamento + "Taxa de aprendizgem: " + TAXA_APRENDIZAGEM + "\n\n";
+      buffer += espacamento + "Taxa de aprendizgem: " + TAXA_APRENDIZAGEM + "\n";
+      buffer += espacamento + "Taxa de momentum: " + TAXA_MOMENTUM + "\n\n";
 
       for(int i = 0; i < this.ocultas.length; i++){
          buffer += espacamento + "Ativação oculta " + i + " = " + this.ocultas[i].ativacao + "\n";
