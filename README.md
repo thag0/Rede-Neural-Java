@@ -34,6 +34,7 @@ Após instanciar a rede, podem ser usadas funções de configuração simples pa
 - Configurar uso do bias como neurônio adicional, se por algum motivo precise que a rede não tenha bias na sua arquiterura, pode ser facilmente removido;
 - Configurar valor da taxa de aprendizagem que será usado durante o treinamento, é muito importante definir um bom balanço entre o valor da taxa de aprendizagem junto com o valor de alcance dos pesos, visto que no começo do treinamento o valor de erros pode ser muito alto e acabar se tornando um NaN;
 - Configurar o valor da taxa de momentum, que funciona como uma espécie de velocidade que ajuda a acelerar o processo de aprendizagem e evitar da rede ficar presa em mínimos locais
+- Configurar o otimizador que vai ser usado na hora de treinar a rede, isso ainda to pesquisando e testando mais, o mais confiável que eu uso e sei melhor como funciona é o SGD, por isso ele já vem por padrão.
 
 Segue um exemplo com as configurações usando a biblioteca:
 ``` 
@@ -41,6 +42,7 @@ rede.configurarAlcancePesos(1.0);
 rede.configurarBias(true);
 rede.configurarTaxaAprendizagem(0.01);
 rede.configurarMomentum(0.9);
+rede.configurarOtimizador(4);
 ```
 <p>
 A única excessão a essa regra é a configuração da função de ativação das camadas, nela é preciso que o modelo esteja compilado previamente. Existem duas formas de configurar as funções de ativação, em uma é definido apenas o valor da função que será usada e ela será aplicada em todas as camadas, em outra precisamos específicar a camada que queremos configurar a função de ativação, como mostrado no exemplo:
@@ -69,18 +71,17 @@ rede.calcularSaida(dados);
 *É importante destacar que o modelo recebe um array/vetor com os dados para a entrada, e que esses dados devem ser do tipo double*
 
 <p>
-O modelo possui três métodos de treino, o principal deles é aplicando o algoritmo Backpropagation e pode ser usado chamando a função de treino da rede, além disso também possui um treino baseado na técnica do gradiente estocástico (SGD), que tende a convergir mais rápido. Em ambos os casos é aplicada a ideia de momentum para ajudar a acelerar o parendizado da rede, além disso nesses métodos é necessário informar tantos os dados de entrada do treino quanto os dados de saída, além do número de épocas de treino, como mostrado no exemplo:
+Para treinar a rede só precisa chamar o método de treino dela, eu dei mais flexibilidade pra treinar disponibilizando configurações de hiperparâmetros pra ela, além de alguns otimizadores que valem ser testado para ver qual se da melhor na aplicação desejada. É necessário apenas informar os dados de treino (entradas e saídas) e o número de épocas que a rede vai treinar, como mostrado no exemplo:
 </p>
 
 ``` 
-rede.treinoBackpropagation(dadosEntrada, dadosSaida, epocas);
-rede.treinoGradienteEstocastico(dadosEntrada, dadosSaida, epocas);
+rede.treinar(dadosEntrada, dadosSaida, epocas);
 
 ```
 *É importante separar os dados de treino e teste para evitar o overfitting da rede*
 
 <p>
-O modelo criado pode ser treinado também usando uma técnica de diferenças finitas, ela não é nada eficiente se comparada com o backpropagation e o SGD, mas funciona bem em modelos simples e com conjuntos de dados menores. Nele é preciso informar algumas informações que são: entrada dos dados de treino, saída dos dados de treino (classes/classifições), um valor de perturbação que deve ser pequeno, quantidade de épocas de treino e o custo mínimo desejado, respectivamente.
+O modelo criado pode ser treinado também usando uma técnica de diferenças finitas, ela não é nada eficiente (tanto que preferi não incluir no métodos de treino) mas funciona bem em modelos simples e com conjuntos de dados menores. Nela é preciso informar algumas informações que são: entrada dos dados de treino, saída dos dados de treino (classes/classifições), um valor de perturbação que deve ser pequeno, quantidade de épocas de treino e o custo mínimo desejado, respectivamente.
 </p>
 
 ``` 
