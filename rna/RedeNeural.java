@@ -117,7 +117,7 @@ public class RedeNeural implements Cloneable, Serializable{
    /**
     * Define o novo valor de taxa de aprendizagem da rede. O valor é usado durante o método de treino.
     * O valor da taxa de aprendizagem difine "o quanto a rede vai aprender com o erro durante o treinamento".
-    * Certifique-se de não usar valores muito altos ou muito baixos para não gerar valores inesperados 
+    * Certifique-se de não usar valores muito altos ou muito baixos para não gerar resultados inesperados 
     * durante o treino.
     * <p>
     *    O valor padrão é 0.1.
@@ -277,7 +277,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * Verifica se o modelo já foi compilado para evitar problemas de uso indevido, bem como componentes nulos.
     * @throws IllegalArgumentException se o modelo não foi compilado.
     */
-   private void modeloValido(){
+   public void modeloValido(){
       if(!this.modeloCompilado){
          throw new IllegalArgumentException("O modelo ainda não foi compilado");
       }
@@ -322,12 +322,16 @@ public class RedeNeural implements Cloneable, Serializable{
     * @param saida matriz com os dados de saída.
     * @return precisão obtida com base nos dados fornecidos, um valor entre 0 e 1, onde 1 representa a máxima precisão.
     * @throws IllegalArgumentException se o modelo não foi compilado previamente.
+    * @throws IllegalArgumentException se a quantidade de linhas dos dados fornecidos for diferente da quantidade de linhas das saídas fornecidas.
     * @throws IllegalArgumentException se o tamanho dos dados de entrada for diferente do tamanho dos neurônios de entrada, excluindo o bias.
     * @throws IllegalArgumentException se o tamanho dos dados de saída for diferente do tamanho dos neurônios de saída.
     */
    public double calcularPrecisao(double[][] dados, double[][] saida){
       modeloValido();
 
+      if(dados.length != saida.length){
+         throw new IllegalArgumentException("A quantidade de linhas de dados e saídas são diferentes");
+      }
       if(dados[0].length != (this.entrada.neuronios.length - BIAS)){
          throw new IllegalArgumentException("Incompatibilidade entre os dados de entrada e os neurônios de entrada da rede");
       }
@@ -365,12 +369,16 @@ public class RedeNeural implements Cloneable, Serializable{
     * @param saida matriz dos dados de saída.
     * @return valor de custo da rede.
     * @throws IllegalArgumentException se o modelo não foi compilado previamente.
+    * @throws IllegalArgumentException se a quantidade de linhas dos dados fornecidos for diferente da quantidade de linhas das saídas fornecidas.
     * @throws IllegalArgumentException se o tamanho dos dados de entrada for diferente do tamanho dos neurônios de entrada, excluindo o bias.
     * @throws IllegalArgumentException se o tamanho dos dados de saída for diferente do tamanho dos neurôniosde de saída.
     */
    public double funcaoDeCusto(double[][] dados, double[][] saida){
       modeloValido();
       
+      if(dados.length != saida.length){
+         throw new IllegalArgumentException("A quantidade de linhas de dados e saídas são diferentes");
+      }
       if(dados[0].length != (this.entrada.neuronios.length-BIAS)){
          throw new IllegalArgumentException("Incompatibilidade entre os dados de entrada e os neurônios de entrada da rede");
       }
@@ -414,7 +422,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * @param saida matriz de dados de saída esperados. Cada linha representa o valor de saída correspondente ao exemplo de entrada.
     * @param epochs número de épocas de treinamento. Uma época é um ciclo completo de treinamento em que todos os exemplos de treinamento são apresentados para a rede.
     * @throws IllegalArgumentException se o modelo não foi compilado previamente.
-    * @throws IllegalArgumentException se a quantidade de amostras dos dados de entrada for diferente da quantidade de amostras da saída.
+    * @throws IllegalArgumentException se a quantidade de linhas dos dados fornecidos for diferente da quantidade de linhas das saídas fornecidas.
     * @throws IllegalArgumentException se o tamanho dos dados de entrada for diferente do tamanho dos neurônios de entrada, excluindo o bias.
     * @throws IllegalArgumentException se o tamanho dos dados de saída for diferente do tamanho dos neurônios de saída da rede.
     * @throws IllegalArgumentException se o valor de épocas for menor que um.
@@ -455,13 +463,13 @@ public class RedeNeural implements Cloneable, Serializable{
 
 
    /**
-    * Treina a rede com a técinica do gradiente estocástico, onde embaralhamos os dados de entrada para tornar o treino "aleatório" mas que tende a
+    * Treina a rede com a técnica do gradiente estocástico, onde embaralhamos os dados de entrada para tornar o treino "aleatório" mas que tende a
     * convergir mais rápido.
     * @param dados matriz de dados de entrada. Cada linha representa um exemplo de entrada.
     * @param saida matriz de dados de saída esperados. Cada linha representa o valor de saída correspondente ao exemplo de entrada.
     * @param epochs número de épocas de treinamento. Uma época é um ciclo completo de treinamento em que todos os exemplos de treinamento são apresentados para a rede.
     * @throws IllegalArgumentException se o modelo não foi compilado previamente.
-    * @throws IllegalArgumentException se a quantidade de amostras dos dados de entrada for diferente da quantidade de amostras da saída.
+    * @throws IllegalArgumentException se a quantidade de linhas dos dados fornecidos for diferente da quantidade de linhas das saídas fornecidas.
     * @throws IllegalArgumentException se o tamanho dos dados de entrada for diferente do tamanho dos neurônios de entrada, excluindo o bias.
     * @throws IllegalArgumentException se o tamanho dos dados de saída for diferente do tamanho dos neurônios de saída da rede.
     * @throws IllegalArgumentException se o valor de épocas for menor que um.
@@ -518,7 +526,8 @@ public class RedeNeural implements Cloneable, Serializable{
 
 
    /**
-    * Retropropaga o erro da rede neural de acordo com os dados de entrada e saída esperados, depois atualiza os pesos usando a técnica de gradiente descendente.
+    * Retropropaga o erro da rede neural de acordo com os dados de entrada e saída esperados, 
+    * depois atualiza os pesos usando a técnica de gradiente descendente com momentum.
     *
     * @param entrada array com os dados de entrada das amostras.
     * @param saida array com as saídas esperadas das amostras.
@@ -577,8 +586,8 @@ public class RedeNeural implements Cloneable, Serializable{
             
             Neuronio neuronio = camadaAtual.neuronios[j];
             for(int k = 0; k < neuronio.pesos.length; k++){//percorrer pesos do neurônio atual
-               double gradiente = TAXA_APRENDIZAGEM * neuronio.erro * camadaAnterior.neuronios[k].saida;
-               neuronio.momentum[k] = (TAXA_MOMENTUM * neuronio.momentum[k]) + gradiente;
+               neuronio.gradiente = TAXA_APRENDIZAGEM * neuronio.erro * camadaAnterior.neuronios[k].saida; 
+               neuronio.momentum[k] = (TAXA_MOMENTUM * neuronio.momentum[k]) + neuronio.gradiente;
                neuronio.pesos[k] += neuronio.momentum[k];
             }
          }
@@ -590,8 +599,8 @@ public class RedeNeural implements Cloneable, Serializable{
     * Método alternativo no treino da rede neural usando diferenciação finita (finite difference), que calcula a "derivada" da função de custo levando
     * a rede ao mínimo local dela. É importante encontrar um bom balanço entre a taxa de aprendizagem da rede e o valor de perturbação usado.
     * <p>
-    *    Vale ressaltar que esse método é mais lento e menos eficiente que o backpropagation, em arquiteturas de rede maiores ou para problemas mais
-    *    complexos ele pode demorar muito para convergir ou simplemente não funcionar como esperado.
+    *    Vale ressaltar que esse método é mais lento e menos eficiente que o backpropagation, em arquiteturas de rede maiores e que tenha uma grande 
+    *    volume de dados de treino ou para problemas mais complexos ele pode demorar muito para convergir ou simplemente não funcionar como esperado.
     * </p>
     * <p>
     *    Ainda sim pode ser uma abordagem válida.
@@ -603,15 +612,19 @@ public class RedeNeural implements Cloneable, Serializable{
     * @param custoMinimo valor de custo desejável, o treino será finalizado caso o valor de custo mínimo seja atingido. Caso o custo mínimo seja zero, o treino
     * irá continuar até o final das épocas fornecidas
     * @throws IllegalArgumentException se o modelo não foi compilado previamente.
+    * @throws IllegalArgumentException se a quantidade de linhas dos dados fornecidos for diferente da quantidade de linhas das saídas fornecidas.
     * @throws IllegalArgumentException se o tamanho dos dados de entrada do treino for diferente da quantidade de neurônios de entrada da rede, excluindo o bias.
     * @throws IllegalArgumentException se o tamanho dos dados de saída do treino for diferente da quantidade de neurônios da saída da rede.
     * @throws IllegalArgumentException se o valor de perturbação for igual a zero.
     * @throws IllegalArgumentException se o valor de épocas for menor que um.
-    * @throws IllegalArgumentException se o valor de custo mínimo for menor negativo.
+    * @throws IllegalArgumentException se o valor de custo mínimo for menor que zero.
     */
    public void diferencaFinita(double[][] treinoEntrada, double[][] treinoSaida, double eps, int epochs, double custoMinimo){
       modeloValido();
 
+      if(treinoEntrada.length != treinoSaida.length){
+         throw new IllegalArgumentException("A quantidade de linhas de dados e saídas são diferentes");
+      }
       if(treinoEntrada[0].length != (this.entrada.neuronios.length-BIAS)){
          throw new IllegalArgumentException("Incompatibilidade entre os dados de entrada e os neurônios de entrada da rede.");
       }
@@ -674,6 +687,22 @@ public class RedeNeural implements Cloneable, Serializable{
 
 
    /**
+    * @return valor de taxa de aprendizagem da rede.
+    */
+   public double obterTaxaAprendizagem(){
+      return this.TAXA_APRENDIZAGEM;
+   }
+
+
+   /**
+    * @return valor de taxa de momentum da rede.
+    */
+   public double obterTaxaMomentum(){
+      return this.TAXA_MOMENTUM;
+   }
+
+
+   /**
     * Retorna a camada de entrada da rede.
     * @return camada de entrada.
     * @throws IllegalArgumentException se o modelo não foi compilado previamente.
@@ -685,9 +714,9 @@ public class RedeNeural implements Cloneable, Serializable{
 
 
    /**
-    * Retorna a camada oculta correspondente a ao índice fornecido
-    * @param indice índice da busca
-    * @return camada oculta baseada na busca
+    * Retorna a camada oculta correspondente a ao índice fornecido.
+    * @param indice índice da busca.
+    * @return camada oculta baseada na busca.
     * @throws IllegalArgumentException se o modelo não foi compilado previamente.
     * @throws IllegalArgumentException se o índice estiver fora do alcance do tamanho das camadas ocultas.
     */
