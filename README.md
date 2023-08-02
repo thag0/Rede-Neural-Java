@@ -34,7 +34,7 @@ Após instanciar a rede, podem ser usadas funções de configuração simples pa
 - Configurar uso do bias como neurônio adicional, se por algum motivo precise que a rede não tenha bias na sua arquiterura, pode ser facilmente removido;
 - Configurar valor da taxa de aprendizagem que será usado durante o treinamento, é muito importante definir um bom balanço entre o valor da taxa de aprendizagem junto com o valor de alcance dos pesos, visto que no começo do treinamento o valor de erros pode ser muito alto e acabar se tornando um NaN;
 - Configurar o valor da taxa de momentum, que funciona como uma espécie de velocidade que ajuda a acelerar o processo de aprendizagem e evitar da rede ficar presa em mínimos locais
-- Configurar o otimizador que vai ser usado na hora de treinar a rede, isso ainda to pesquisando e testando mais, o mais confiável que eu uso e sei melhor como funciona é o SGD, por isso ele já vem por padrão.
+- Configurar o otimizador que vai ser usado na hora de treinar a rede, isso ainda to pesquisando e testando mais, o mais confiável que eu uso e sei melhor como funciona é o SGD, por isso ele já vem por padrão, mas também adicionei o backpropagation tradicional com gradiente descendente, o AdaGrad e o Adam.
 
 Segue um exemplo com as configurações usando a biblioteca:
 ``` 
