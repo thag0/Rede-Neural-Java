@@ -11,12 +11,11 @@ Minha ideia é criar uma biblioteca ou framework baseado nesse modelo apresentad
 </p>
 
 <p>
-Ainda tenho ideias de implementações futuras para a melhora desse modelo, como formas mais elaboradas e variadas de funções de ativação, arquiteturas mais flexíveis e por aí vai. Talvez tentar encaixar a ideia de redes neurais convolucionais no futuro para abrir mais possibilidades ainda de uso
+Ainda tenho ideias de implementações futuras para a melhora desse modelo, como formas mais elaboradas e variadas de funções de ativação, arquiteturas mais flexíveis, outros tipos de otimizadores e por aí vai. Talvez tentar encaixar a ideia de redes neurais convolucionais no futuro para abrir mais possibilidades ainda de uso
 </p>
 
 <p>
-O modelo já pode ser usado em aplicações e possui dois métodos de treino baseados no backpropagation, uma alternativa que fiz foi implementar o treino usando uma técnica 
-conhecida como Diferenças Finitas, além disso o algoritmo já conta com algumas opções de modificação de hiperparâmetros e funções de ativação, além de opções de 
+O modelo já pode ser usado em aplicações e possui um método de treino que pode ser flexibilizado com uso de alguns otimizadores, uma alternativa que fiz foi implementar o treino usando uma técnica conhecida como Diferenças Finitas (foi a primeira técnica de treino que usei e decidi manter no código), além disso o algoritmo já conta com algumas opções de modificação de hiperparâmetros e funções de ativação, além de opções de 
 salvamento e leitura para arquivos externos.
 </p>
 
@@ -103,10 +102,10 @@ String caminho = "./rede-salva.dat";
 rede.salvarArquivoRede(caminho);
 ```
 
-Para ler o arquivo salvo, é necessário informar o caminho onde o arquivo está localizado, o caminho deve incluir o nome e a extensão do arquivo.
+Para ler o arquivo salvo, é necessário informar o caminho onde o arquivo está localizado, o caminho deve incluir o nome e a extensão do arquivo. Esse método é estático e não precisa de uma instância predefinida para ser executado.
 ```
 String caminho = "./rede-salva.dat";
-rede.lerArquivoRede(caminho);
+RedeNeural rede = RedeNeural.lerArquivoRede(caminho);
 ```
 
 Bom uso!
