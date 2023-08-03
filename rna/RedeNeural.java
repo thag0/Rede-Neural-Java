@@ -8,6 +8,13 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Random;
 
+import rna.otimizadores.AdaGrad;
+import rna.otimizadores.Adam;
+import rna.otimizadores.Backpropagation;
+import rna.otimizadores.Otimizador;
+import rna.otimizadores.RMSProp;
+import rna.otimizadores.SGD;
+
 
 /**
  * Modelo de Rede Neural Multilayer Perceptron baseado em feedforward criado do zero. Possui um conjunto de camadas 
@@ -41,15 +48,9 @@ public class RedeNeural implements Cloneable, Serializable{
    private double alcancePeso = 1.0;
    private boolean modeloCompilado = false;
 
-   private enum Otimizador{
-      BACKPROPAGATION,
-      SGD,
-      ADAGRAD,
-      ADAM
-   };
+   private Otimizador otimizadorAtual = new SGD();//otimizador padrão
 
-   private Otimizador otimizadorAtual = Otimizador.SGD;
-
+   Random random = new Random();//treino embaralhado
 
    /**
     * <p>
@@ -233,17 +234,19 @@ public class RedeNeural implements Cloneable, Serializable{
     *    <li>1 - Backpropagation: Método clássico de retropropagação de erro para treinamento de redes neurais.</li>
     *    <li>2 - SGD (Gradiente Descendente Estocástico): Atualiza os pesos usando o conjunto de treino embaralhado.</li>
     *    <li>3 - AdaGrad: Um otimizador que adapta a taxa de aprendizado para cada parâmetro da rede com base em iterações anteriores.</li>
-    *    <li>4 - Adam: Um otimizador que combina o AdaGrad e o Momentum para convergência rápida e estável.</li>
+    *    <li>4 - RMSProp: Um otimizador que utiliza a média móvel dos quadrados dos gradientes acumulados para ajustar a taxa de aprendizado.</li>
+    *    <li>5 - Adam: Um otimizador que combina o AdaGrad e o Momentum para convergência rápida e estável.</li>
     * </ul>
     * @param otimizador valor do novo otimizador.
     * @throws IllegalArgumentException se o valor fornecido do otimizador estiver fora da lista dos disponíveis.
     */
    public void configurarOtimizador(int otimizador){
       switch(otimizador){
-         case 1: this.otimizadorAtual = Otimizador.BACKPROPAGATION; break;
-         case 2: this.otimizadorAtual = Otimizador.SGD; break;
-         case 3: this.otimizadorAtual = Otimizador.ADAGRAD; break;
-         case 4: this.otimizadorAtual = Otimizador.ADAM; break;
+         case 1: this.otimizadorAtual = new Backpropagation(); break;
+         case 2: this.otimizadorAtual = new SGD(); break;
+         case 3: this.otimizadorAtual = new AdaGrad(); break;
+         case 4: this.otimizadorAtual = new RMSProp(); break;
+         case 5: this.otimizadorAtual = new Adam(); break;
          default: throw new IllegalArgumentException("Valor fornecido do otimizador é inválido.");
       }
    }
@@ -455,18 +458,31 @@ public class RedeNeural implements Cloneable, Serializable{
     * @param saida dados de saída correspondente a entrada (class).
     * @param epochs quantidade de épocas.
     * @throws IllegalArgumentException se o modelo não foi compilado previamente.
+    * @throws IllegalArgumentException se o tamanho dos dados de entrada for diferente do tamanho dos dados de saída.
+    * @throws IllegalArgumentException se o tamanho dos dados de entrada for diferente do tamanho dos neurônios de entrada, excluindo o bias.
+    * @throws IllegalArgumentException se o tamanho dos dados de saída for diferente do tamanho dos neurôniosde de saída.
+    * @throws IllegalArgumentException se o valor de épocas for menor que um.
     */
-   public void treinar(double[][] dados, double[][] saida, int epochs){
+   public void treinar(double[][] entradas, double[][] saidas, int epochs){
       modeloValido();
 
-      if(otimizadorAtual == Otimizador.BACKPROPAGATION) treinoSequencial(dados, saida, epochs);
-      else if(
-         otimizadorAtual == Otimizador.SGD || 
-         otimizadorAtual == Otimizador.ADAGRAD || 
-         otimizadorAtual == Otimizador.ADAM){
-         treinoEmbaralhado(dados, saida, epochs);
+      if(entradas.length != saidas.length){
+         throw new IllegalArgumentException("A quantidade de dados de entrada e saída são diferentes.");
       }
-      else throw new IllegalArgumentException("ero");
+      if(entradas[0].length != (this.entrada.neuronios.length-BIAS)){
+         throw new IllegalArgumentException("O tamanho dos dados de entrada não corresponde ao tamanho dos neurônios de entrada da rede, com exceção dos bias");
+      }
+      if(saidas[0].length != this.saida.neuronios.length){
+         throw new IllegalArgumentException("O tamanho dos dados de saída não corresponde ao tamanho dos neurônios de saída da rede");
+      }
+      if(epochs < 1){
+         throw new IllegalArgumentException("O valor de epochs não pode ser menor que um");
+      }
+
+      if(otimizadorAtual.getClass().equals(rna.otimizadores.Backpropagation.class)){
+         treinoSequencial(entradas, saidas, epochs);
+      
+      }else treinoEmbaralhado(entradas, saidas, epochs);
    }
 
 
@@ -475,26 +491,8 @@ public class RedeNeural implements Cloneable, Serializable{
     * @param dados matriz de dados de entrada. Cada linha representa um exemplo de entrada.
     * @param saida matriz de dados de saída esperados. Cada linha representa o valor de saída correspondente ao exemplo de entrada.
     * @param epochs número de épocas de treinamento. Uma época é um ciclo completo de treinamento em que todos os exemplos de treinamento são apresentados para a rede.
-    * @throws IllegalArgumentException se o modelo não foi compilado previamente.
-    * @throws IllegalArgumentException se a quantidade de linhas dos dados fornecidos for diferente da quantidade de linhas das saídas fornecidas.
-    * @throws IllegalArgumentException se o tamanho dos dados de entrada for diferente do tamanho dos neurônios de entrada, excluindo o bias.
-    * @throws IllegalArgumentException se o tamanho dos dados de saída for diferente do tamanho dos neurônios de saída da rede.
-    * @throws IllegalArgumentException se o valor de épocas for menor que um.
     */
    private void treinoSequencial(double[][] dados, double[][] saida, int epochs){
-      if(dados.length != saida.length){
-         throw new IllegalArgumentException("A quantidade de dados de entrada e saída são diferentes");
-      }
-      if(dados[0].length != (this.entrada.neuronios.length-BIAS)){
-         throw new IllegalArgumentException("Incompatibilidade entre os dados de entrada e os neurônios de entrada da rede");
-      }
-      if(saida[0].length != this.saida.neuronios.length){
-         throw new IllegalArgumentException("Incompatibilidade entre os dados de saída e os neurônios de saída da rede");
-      }
-      if(epochs < 1){
-         throw new IllegalArgumentException("O valor de epochs não pode ser menor que um");
-      }
-
       double[] dadosEntrada = new double[dados[0].length];//tamanho de colunas da entrada
       double[] dadosSaida = new double[saida[0].length];//tamanho de colunas da saída
 
@@ -508,7 +506,7 @@ public class RedeNeural implements Cloneable, Serializable{
                dadosSaida[k] = saida[j][k];
             }
 
-            Otimizadores.backpropagation(this, dadosEntrada, dadosSaida);
+            otimizadorAtual.atualizar(this, dadosEntrada, dadosSaida);
          }      
       }
    }
@@ -526,37 +524,25 @@ public class RedeNeural implements Cloneable, Serializable{
     * @throws IllegalArgumentException se o tamanho dos dados de saída for diferente do tamanho dos neurônios de saída da rede.
     * @throws IllegalArgumentException se o valor de épocas for menor que um.
     */
-   private void treinoEmbaralhado(double[][] dados, double[][] saida, int epochs){
-      if(dados.length != saida.length){
-         throw new IllegalArgumentException("A quantidade de dados de entrada e saída são diferentes");
-      }
-      if(dados[0].length != (this.entrada.neuronios.length - BIAS)){
-        throw new IllegalArgumentException("Incompatibilidade entre os dados de entrada e os neurônios de entrada da rede");
-      }
-      if(saida[0].length != this.saida.neuronios.length){
-        throw new IllegalArgumentException("Incompatibilidade entre os dados de saída e os neurônios de saída da rede");
-      }
-      if(epochs < 1){
-        throw new IllegalArgumentException("O valor de epochs não pode ser menor que um");
-      }
-   
+   private void treinoEmbaralhado(double[][] dados, double[][] saida, int epochs){   
       double[] dadosEntrada = new double[dados[0].length];//tamanho de colunas da entrada
       double[] dadosSaida = new double[saida[0].length];//tamanho de colunas da saída
       
-      Random random = new Random();
       int[] indices = new int[dados.length];
    
       int i, j, k;
+      int indiceAleatorio, aux;
       for(i = 0; i < epochs; i++){// quantidade de épocas
          //embaralhar os dados antes de cada época
+         //usando índices aleatórios
          for(j = 0; j < dados.length; j++){
             indices[j] = j;
          }
          for(j = 0; j < dados.length; j++){
-            int indiceAleatorio = random.nextInt(dados.length);
-            int temp = indices[j];
+            indiceAleatorio = random.nextInt(dados.length);
+            aux = indices[j];
             indices[j] = indices[indiceAleatorio];
-            indices[indiceAleatorio] = temp;
+            indices[indiceAleatorio] = aux;
          }
 
          //treinar com os dados embaralhados
@@ -569,10 +555,7 @@ public class RedeNeural implements Cloneable, Serializable{
                dadosSaida[k] = saida[indiceDados][k];
             }
 
-            //infelizmente ta feio isso
-            if(otimizadorAtual == Otimizador.SGD) Otimizadores.sgdMomentum(this, dadosEntrada, dadosSaida);
-            else if(otimizadorAtual == Otimizador.ADAGRAD) Otimizadores.adagrad(this, dadosEntrada, dadosSaida);
-            else if(otimizadorAtual == Otimizador.ADAM) Otimizadores.adam(this, dadosEntrada, dadosSaida);
+            otimizadorAtual.atualizar(this, dadosEntrada, dadosSaida);
          }
       }
    }
@@ -853,7 +836,7 @@ public class RedeNeural implements Cloneable, Serializable{
       System.out.println("\nInformações " + this.getClass().getSimpleName() + " = [");
 
       
-      buffer += espacamento + "Otimizador: " + otimizadorAtual.name() + "\n";
+      buffer += espacamento + "Otimizador: " + this.otimizadorAtual.getClass().getSimpleName() + "\n";
       buffer += espacamento + "Taxa de aprendizgem: " + TAXA_APRENDIZAGEM + "\n";
       buffer += espacamento + "Taxa de momentum: " + TAXA_MOMENTUM + "\n";
 
