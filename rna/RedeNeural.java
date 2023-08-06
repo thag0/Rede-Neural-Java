@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -32,26 +33,23 @@ import rna.otimizadores.SGD;
  * @author Thiago Barroso, acadêmico de Engenharia da Computação pela Universidade Federal do Pará, Campus Tucuruí. Ano de 2023.
  */
 public class RedeNeural implements Cloneable, Serializable{
+   //estrutura 
    public Camada entrada;
    public Camada[] ocultas;
    public Camada saida;
-
    private int[] arquitetura;
    
-   private int neuroniosEntrada;
-   private int neuroniosOcultas;
-   private int neuroniosSaida;
-   private int quantidadeOcultas;
-
+   //parâmertos importantes
    private double TAXA_APRENDIZAGEM = 0.01;
    private double TAXA_MOMENTUM = 0;
    private int BIAS = 1;
    private double alcancePeso = 1.0;
    private boolean modeloCompilado = false;
-
    private Otimizador otimizadorAtual = new SGD();//otimizador padrão
-
+   private boolean nesterov = false;// acelerador de nesterov
+   
    Random random = new Random();//treino embaralhado
+
 
    /**
     * <p>
@@ -85,18 +83,49 @@ public class RedeNeural implements Cloneable, Serializable{
          if(arquitetura[i] < 1) throw new IllegalArgumentException("Os valores fornecidos devem ser maiores ou iguais a um.");
       }
 
-      this.neuroniosEntrada = arquitetura[0];
-
-      this.quantidadeOcultas = 0;//evitar problemas
-      for(int i = 1; i < arquitetura.length-1; i++) this.quantidadeOcultas += 1;
-
+      int quantidadeOcultas = arquitetura.length-2;//evitar problemas
       this.arquitetura = new int[1 + quantidadeOcultas + 1];
-      this.arquitetura[0] = this.neuroniosEntrada;
-      
-      for(int i = 0; i < this.quantidadeOcultas; i++) this.arquitetura[i+1] = arquitetura[i+1];
-      
-      this.neuroniosSaida = arquitetura[arquitetura.length-1];
-      this.arquitetura[this.arquitetura.length-1] = this.neuroniosSaida;
+      this.arquitetura[0] = arquitetura[0];
+      for(int i = 0; i < quantidadeOcultas; i++) this.arquitetura[i+1] = arquitetura[i+1];
+      this.arquitetura[this.arquitetura.length-1] = arquitetura[arquitetura.length-1];
+   }
+
+
+   /**
+    * <p>
+    *    Cria uma instância de rede neural artificial. A arquitetura da rede será baseada de acordo com os valores 
+    *    de número de neurônios fornecidos.
+    * </p>
+    * <p>
+    *   Os valores de todos os parâmetros pedidos <strong>NÃO devem</strong> ser menores que 1.
+    * </p>
+    * <p>
+    *    Após instanciar o modelo, é necessário compilar por meio da função <pre>compilar()</pre>
+    * </p>
+    * <p>
+    *    Certifique-se de configurar as propriedades da rede por meio das funções de configuração fornecidas
+    *    como, alcance dos pesos iniciais, taxa de aprendizagem e uso de bias. Caso não seja usada nenhuma 
+    *    das funções de configuração, a rede será compilada com os valores padrão.
+    * </p>
+    * @param nEntrada número de neurônios da camada de entrada.
+    * @param nOcultas número de neurônios das camadas ocultas.
+    * @param nSaida número de neurônios da camada de saída.
+    * @param qOcultas quantidade de camadas ocultas.
+    * @author Thiago Barroso, acadêmico de Engenharia da Computação pela Universidade Federal do Pará, Campus Tucuruí. Ano de 2023.
+    * @throws IllegalArgumentException se algum dos valores fornecidos for menor que 1.
+    */
+   public RedeNeural(int nEntrada, int nOcultas, int nSaida, int qOcultas){
+      if(nEntrada < 1 || nOcultas < 1 || nSaida < 1 || qOcultas < 1){
+         throw new IllegalArgumentException("Os valores fornecidos devem ser maiores ou iguais a 1.");
+      }
+
+      this.arquitetura = new int[1 + qOcultas + 1];
+
+      this.arquitetura[0] = nEntrada;
+      for(int i = 1; i < this.arquitetura.length-1; i++){
+         this.arquitetura[i] = nOcultas;
+      }
+      this.arquitetura[this.arquitetura.length-1] = nSaida;
    }
 
 
@@ -268,6 +297,39 @@ public class RedeNeural implements Cloneable, Serializable{
 
 
    /**
+    * Configura o otimizador usado durante o treino da rede neural.
+    * <p>
+    *    O otimizador padrão é o SGD (Gradiente Descendente Estocástico).
+    * </p>
+    * <p>
+    *    Os otimizadores disponíveis são:
+    * </p>
+    * <ul>
+    *    <li>1 - Backpropagation: Método clássico de retropropagação de erro para treinamento de redes neurais.</li>
+    *    <li>2 - SGD (Gradiente Descendente Estocástico): Atualiza os pesos usando o conjunto de treino embaralhado.</li>
+    *    <li>3 - AdaGrad: Um otimizador que adapta a taxa de aprendizado para cada parâmetro da rede com base em iterações anteriores.</li>
+    *    <li>4 - RMSProp: Um otimizador que utiliza a média móvel dos quadrados dos gradientes acumulados para ajustar a taxa de aprendizado.</li>
+    *    <li>5 - Adam: Um otimizador que combina o AdaGrad e o Momentum para convergência rápida e estável.</li>
+    * </ul>
+    * @param otimizador valor do novo otimizador.
+    * @param nesterov configura se o otimizador vai usar o acelerador de Nesterov (Por enquanto só pro SGD)
+    * @throws IllegalArgumentException se o valor fornecido do otimizador estiver fora da lista dos disponíveis.
+    */
+   public void configurarOtimizador(int otimizador, boolean nesterov){
+      switch(otimizador){
+         case 1: this.otimizadorAtual = new Backpropagation(); break;
+         case 2: this.otimizadorAtual = new SGD(nesterov); break;
+         case 3: this.otimizadorAtual = new AdaGrad(); break;
+         case 4: this.otimizadorAtual = new RMSProp(); break;
+         case 5: this.otimizadorAtual = new Adam(); break;
+         default: throw new IllegalArgumentException("Valor fornecido do otimizador é inválido.");
+      }
+
+      this.nesterov = nesterov;
+   }
+
+
+   /**
     * Compila o modelo de rede baseado nos valores fornecidos. Antes da compilação é possível
     * informar alguns valores ajustáveis na inicialização da rede, como:
     * <ul>
@@ -300,6 +362,7 @@ public class RedeNeural implements Cloneable, Serializable{
       }
 
       //inicializar camadas ocultas
+      int quantidadeOcultas = this.arquitetura.length-2;
       ocultas = new Camada[quantidadeOcultas];
       for(int i = 0; i < this.ocultas.length; i++){// percorrer ocultas
          Camada novaOculta = new Camada(temBias);
@@ -876,8 +939,12 @@ public class RedeNeural implements Cloneable, Serializable{
       String espacamento = "    ";
       System.out.println("\nInformações " + this.getClass().getSimpleName() + " = [");
 
-      
-      buffer += espacamento + "Otimizador: " + this.otimizadorAtual.getClass().getSimpleName() + "\n";
+      //otimizador
+      buffer += espacamento + "Otimizador: " + this.otimizadorAtual.getClass().getSimpleName();
+      if(nesterov) buffer += " (Acelerador de Nesterov)";
+      buffer += "\n";
+
+      //hiperparâmetros
       buffer += espacamento + "Taxa de aprendizgem: " + TAXA_APRENDIZAGEM + "\n";
       buffer += espacamento + "Taxa de momentum: " + TAXA_MOMENTUM + "\n";
 
@@ -909,31 +976,28 @@ public class RedeNeural implements Cloneable, Serializable{
    @Override
    public RedeNeural clone(){
       modeloValido();
+
       try{
          RedeNeural clone = (RedeNeural) super.clone();
 
-         // Clonar dados importantes
-         clone.neuroniosEntrada = this.neuroniosEntrada;
-         clone.neuroniosOcultas = this.neuroniosOcultas;
-         clone.neuroniosSaida = this.neuroniosSaida;
-         clone.quantidadeOcultas = this.quantidadeOcultas;
+         //dados importantes
          clone.TAXA_APRENDIZAGEM = this.TAXA_APRENDIZAGEM;
          clone.TAXA_MOMENTUM = this.TAXA_MOMENTUM;
          clone.BIAS = this.BIAS;
          clone.arquitetura = this.arquitetura;
 
-         boolean temBias = (this.BIAS == 1) ? true : false;
-         // Clonar camada de entrada
-         clone.entrada = cloneCamada(this.entrada, temBias);
+         //entrada
+         clone.entrada = cloneCamada(this.entrada);
 
-         // Clonar camadas ocultas
+         //ocultas
+         int quantidadeOcultas = this.arquitetura.length-2;
          clone.ocultas = new Camada[quantidadeOcultas];
-         for (int i = 0; i < quantidadeOcultas; i++) {
-            clone.ocultas[i] = cloneCamada(this.ocultas[i], temBias);
+         for(int i = 0; i < quantidadeOcultas; i++){
+            clone.ocultas[i] = cloneCamada(this.ocultas[i]);
          }
 
-         // Clonar camada de saída
-         clone.saida = cloneCamada(this.saida, false);
+         //saída
+         clone.saida = cloneCamada(this.saida);
 
          return clone;
       }catch(CloneNotSupportedException e){
@@ -942,8 +1006,13 @@ public class RedeNeural implements Cloneable, Serializable{
    }
 
 
-   private Camada cloneCamada(Camada camada, boolean temBias){
-      Camada clone = new Camada(temBias);
+   /**
+    * Clona uma instância de camada da rede neural.
+    * @param camada camada original
+    * @return clone da camada fornecida.
+    */
+   private Camada cloneCamada(Camada camada){
+      Camada clone = new Camada(camada.temBias);
       clone.neuronios = new Neuronio[camada.neuronios.length];
       clone.ativacao = camada.ativacao;
       clone.temBias = camada.temBias;
