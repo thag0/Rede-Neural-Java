@@ -3,31 +3,24 @@ package rna.otimizadores;
 import java.util.ArrayList;
 
 import rna.Camada;
-import rna.RedeNeural;
 
 
 /**
- * Interface genérica para implementações de otimizadores do treino da rede neural.
+ * Classe genérica para implementações de otimizadores do treino da rede neural.
+ * <p>
+ *      Para adicionar um novo otimizador, é preciso extender a classe Otimizador e implementar
+ *      o método {@code atualizar()}.
+ * </p>
  */
-public abstract interface Otimizador{
-   //funções necessárias
-
-   /**
-    * Calcula o erro de cada neurônio na rede neural.
-    *
-    * O método percorre a rede neural de trás para frente, calculando o erro de cada neurônio
-    * na camada de saída e propagando esse erro para as camadas ocultas. 
-    * @param redec lista de camadas da rede neural.
-    * @param entrada dados de entrada do treinamento.
-    * @param saida dados de saída correspondente aos valores de entrada.
-    */
-   public void calcularErro(ArrayList<Camada> redec, double[] entrada, double[] saida);
+public abstract class Otimizador{
 
    /**
     * Treina a rede neural de acordo com o otimizador configurado.
-    * @param rede rede para o treino
-    * @param entrada dados de entrada
-    * @param saida dados de saída
+    * @param redec Rede Neural em formato de lista de camadas.
+    * @param taxaAprendizagem valor de taxa de aprendizagem da Rede Neural.
+    * @param momentum valor de taxa de momentum da Rede Neural.
     */
-   public void atualizar(RedeNeural rede, double[] entrada, double[] saida);
+    public void atualizar(ArrayList<Camada> redec, double taxaAprendizagem, double momentum){
+        throw new java.lang.UnsupportedOperationException("Método de atualização do otimizador não foi implementado.");
+    }
 }

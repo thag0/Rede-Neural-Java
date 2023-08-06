@@ -51,6 +51,12 @@ public class RedeNeural implements Cloneable, Serializable{
    Random random = new Random();//treino embaralhado
 
 
+   //TODO
+   //Implementar formas melhores de treinar com uma grande quantidade de dados.
+   //Talvez implementar treino em lotes (batch) ou paralelizar com threads o treino.
+   //Formas mais elaboradas de otmizadores.
+
+
    /**
     * <p>
     *    Cria uma instância de rede neural artificial. A arquitetura da rede será baseada de acordo com cada posição do array,
@@ -427,6 +433,43 @@ public class RedeNeural implements Cloneable, Serializable{
       this.saida.ativarNeuronios(this.ocultas[this.ocultas.length-1]);
    }
 
+
+   /**
+    * Calcula o erro de cada neurônio na rede neural.
+    *
+    * O método percorre a rede neural de trás para frente, calculando o erro de cada neurônio
+    * na camada de saída e propagando esse erro para as camadas ocultas. 
+    * @param redec rede neural em formato de lista de camadas.
+    * @param entrada dados de entrada do treinamento.
+    * @param saida dados de saída correspondente aos valores de entrada.
+    */
+   private void calcularErro(ArrayList<Camada> redec, double[] entrada, double[] saida){
+      //erro da saída
+      Camada saidaRede = redec.get(redec.size()-1);
+      for(int i = 0; i < saidaRede.neuronios.length; i++){
+         Neuronio neuronio = saidaRede.neuronios[i];
+         neuronio.erro = ((saida[i] - neuronio.saida) * saidaRede.funcaoAtivacaoDx(neuronio.somatorio));
+      }
+
+      double somaErros = 0.0;
+      //começar da ultima oculta
+      for(int i = redec.size()-2; i >= 1; i--){// percorrer camadas ocultas de trás pra frente
+         
+         Camada camadaAtual = redec.get(i);
+         int qNeuronioAtual = camadaAtual.neuronios.length;
+         if(redec.get(i).temBias) qNeuronioAtual -= 1;
+         for (int j = 0; j < qNeuronioAtual; j++){//percorrer neurônios da camada atual
+         
+            Neuronio neuronio = camadaAtual.neuronios[j];
+            somaErros = 0.0;
+            for(Neuronio neuronioProximo : redec.get(i+1).neuronios){//percorrer neurônios da camada seguinte
+               somaErros += neuronioProximo.pesos[j] * neuronioProximo.erro;
+            }
+            neuronio.erro = somaErros * camadaAtual.funcaoAtivacaoDx(neuronio.somatorio);
+         }
+      }
+   }
+
    
    /**
     * Calcula a precisão da rede neural com base nos dados fornecidos.
@@ -583,11 +626,18 @@ public class RedeNeural implements Cloneable, Serializable{
       int[] indices = new int[entradas.length];
       for(int i = 0; i < indices.length; i++) indices[i] = i;
 
+      //transformar a rede numa lista de camdas pra facilitar minha vida
+      ArrayList<Camada> redec = new ArrayList<>();
+      redec.add(this.entrada);
+      for(Camada camada : this.ocultas) redec.add(camada);
+      redec.add(this.saida);
+
       int i, j, k;
       for(i = 0; i < epochs; i++){//quantidade de épocas
          if(embaralhar) embaralharDados(entradas, saidas);
 
-         for(j = 0; j < entradas.length; j++){//preencher dados de entrada e saída
+         for(j = 0; j < entradas.length; j++){//percorrer amostras
+            //preencher dados de entrada e saída
             for(k = 0; k < entradas[0].length; k++){
                dadosEntrada[k] = entradas[j][k];
             }
@@ -595,7 +645,9 @@ public class RedeNeural implements Cloneable, Serializable{
                dadosSaida[k] = saidas[j][k];
             }
 
-            otimizadorAtual.atualizar(this, dadosEntrada, dadosSaida);
+            calcularSaida(dadosEntrada);
+            calcularErro(redec, dadosEntrada, dadosSaida);
+            otimizadorAtual.atualizar(redec, this.TAXA_APRENDIZAGEM, this.TAXA_MOMENTUM);
          }
       }
    }
@@ -852,6 +904,16 @@ public class RedeNeural implements Cloneable, Serializable{
    public Camada obterCamadaEntrada(){
       modeloValido();
       return this.entrada;
+   }
+
+
+   /**
+    * @return quantiade de camadas ocultas da rede.
+    * @throws IllegalArgumentException se o modelo não foi compilado previamente.
+    */
+   public int obterQuantidadeOcultas(){
+      modeloValido();
+      return this.ocultas.length;
    }
 
 
