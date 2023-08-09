@@ -17,7 +17,7 @@ public class Neuronio implements Serializable{
    public double somatorio;//entradas * pesos
    public double saida;//resultado a ativação
    public double erro;//backpropagation
-   public double gradiente;//backpropagation
+   public double[] gradiente;//backpropagation
 
    private Random random = new Random();
 
@@ -34,6 +34,7 @@ public class Neuronio implements Serializable{
       this.momentum = new double[ligacoes];
       this.acumuladorGradiente = new double[ligacoes];
       this.acumuladorSegundaOrdem = new double[ligacoes];
+      this.gradiente = new double[ligacoes];
 
       this.pesos = new double[ligacoes];
       for(int i = 0; i < pesos.length; i++){

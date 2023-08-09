@@ -610,8 +610,8 @@ public class RedeNeural implements Cloneable, Serializable{
 
 
    /**
-    * Treina a rede com a técnica do gradiente estocástico, onde embaralhamos os dados de entrada para tornar o treino "aleatório" mas que tende a
-    * convergir mais rápido.
+    * Treina a rede com a técnica do gradiente estocástico, onde embaralhamos os dados de entrada para tornar o treino "aleatório" 
+    * mas que tende a convergir mais rápido.
     * @param dados matriz de dados de entrada. Cada linha representa um exemplo de entrada.
     * @param saida matriz de dados de saída esperados. Cada linha representa o valor de saída correspondente ao exemplo de entrada.
     * @param epochs número de épocas de treinamento. Uma época é um ciclo completo de treinamento em que todos os exemplos de treinamento são apresentados para a rede.
@@ -638,12 +638,8 @@ public class RedeNeural implements Cloneable, Serializable{
          erroMedio = 0;
          for(j = 0; j < entradas.length; j++){//percorrer amostras
             //preencher dados de entrada e saída
-            for(k = 0; k < entradas[0].length; k++){
-               dadosEntrada[k] = entradas[j][k];
-            }
-            for(k = 0; k < saidas[0].length; k++){
-               dadosSaida[k] = saidas[j][k];
-            }
+            dadosEntrada = entradas[j];
+            dadosSaida = saidas[j];
 
             calcularSaida(dadosEntrada);
             backpropagation(redec, dadosSaida);
@@ -754,6 +750,21 @@ public class RedeNeural implements Cloneable, Serializable{
             neuronio.erro = somaErros * camadaAtual.funcaoAtivacaoDx(neuronio.somatorio);
          }
       }
+
+      for(int i = 1; i < redec.size(); i++){//percorrer rede 
+         
+         Camada camadaAtual = redec.get(i);
+         Camada camadaAnterior = redec.get(i-1);
+         int nNeuronios = camadaAtual.obterQuantidadeNeuronios();
+         nNeuronios -= (camadaAtual.temBias) ? 1 : 0;
+         for(int j = 0; j < nNeuronios; j++){//percorrer neurônios da camada atual
+            
+            Neuronio neuronio = camadaAtual.neuronios[j];
+            for(int k = 0; k < neuronio.pesos.length; k++){//percorrer pesos do neurônio atual
+               neuronio.gradiente[k] = TAXA_APRENDIZAGEM * neuronio.erro * camadaAnterior.neuronios[k].saida;
+            }
+         }
+      } 
    }
 
 

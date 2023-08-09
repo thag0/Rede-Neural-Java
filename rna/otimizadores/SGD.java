@@ -26,21 +26,20 @@ public class SGD extends Otimizador{
       for(int i = 1; i < redec.size(); i++){//percorrer rede 
          
          Camada camadaAtual = redec.get(i);
-         Camada camadaAnterior = redec.get(i-1);
-         for(int j = 0; j < camadaAtual.neuronios.length; j++){//percorrer neurônios da camada atual
+         int nNeuronios = camadaAtual.obterQuantidadeNeuronios();
+         nNeuronios -= (camadaAtual.temBias) ? 1 : 0;
+         for(int j = 0; j < nNeuronios; j++){//percorrer neurônios da camada atual
             
             Neuronio neuronio = camadaAtual.neuronios[j];
             for(int k = 0; k < neuronio.pesos.length; k++){//percorrer pesos do neurônio atual
                if(nesterov){
                   double momentumAnterior = neuronio.momentum[k];
                   neuronio.pesos[k] += momentum * momentumAnterior;
-                  neuronio.gradiente = taxaAprendizagem * neuronio.erro * camadaAnterior.neuronios[k].saida;
-                  neuronio.momentum[k] = momentum * momentumAnterior + neuronio.gradiente;
+                  neuronio.momentum[k] = momentum * momentumAnterior + neuronio.gradiente[k];
                   neuronio.pesos[k] -= taxaAprendizagem * neuronio.momentum[k];
                   
                }else{
-                  neuronio.gradiente = taxaAprendizagem * neuronio.erro * camadaAnterior.neuronios[k].saida;
-                  neuronio.momentum[k] = (momentum * neuronio.momentum[k]) + neuronio.gradiente;
+                  neuronio.momentum[k] = (momentum * neuronio.momentum[k]) + neuronio.gradiente[k];
                   neuronio.pesos[k] += neuronio.momentum[k];
                }
             }
