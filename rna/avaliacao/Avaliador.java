@@ -3,10 +3,10 @@ package rna.avaliacao;
 import rna.RedeNeural;
 
 public class Avaliador{
-   Auxiliares aux;
+   AuxiliaresAvaliacao aux;
 
    public Avaliador(){
-      this.aux = new Auxiliares();
+      this.aux = new AuxiliaresAvaliacao();
    }
 
 

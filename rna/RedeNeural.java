@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import rna.avaliacao.Avaliador;
+import rna.treino.Treino;
+
 import rna.otimizadores.AdaGrad;
 import rna.otimizadores.Adam;
 import rna.otimizadores.GradientDescent;
@@ -53,14 +55,10 @@ public class RedeNeural implements Cloneable, Serializable{
    private Otimizador otimizadorAtual = new SGD();//otimizador padrão
    private boolean nesterov = false;// acelerador de nesterov
    
-   Avaliador avaliador = new Avaliador();
+   private Avaliador avaliador = new Avaliador();
+   private Treino treino = new Treino();
 
    Random random = new Random();//treino embaralhado
-
-   private boolean calcularHistoricoErro = false;
-   private boolean calcularHistoricoCusto = false;
-   ArrayList<Double> historicoErro = new ArrayList<>();
-   ArrayList<Double> historicoCusto = new ArrayList<>();
 
 
    /**
@@ -239,7 +237,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * @throws IllegalArgumentException se o modelo não foi compilado previamente.
     */
    public void configurarFuncaoAtivacao(Camada camada, int funcaoAtivacao){
-      modeloValido();
+      modeloCompilado();
       if(camada.equals(this.entrada)){
          throw new IllegalArgumentException("Não é possível configurar função de ativação para a camada de entrada.");
       } 
@@ -271,7 +269,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * @throws IllegalArgumentException se o modelo não foi compilado previamente.
     */
    public void configurarFuncaoAtivacao(int funcaoAtivacao){
-      modeloValido();
+      modeloCompilado();
       
       for(Camada camada : this.ocultas) camada.configurarAtivacao(funcaoAtivacao);
       this.saida.configurarAtivacao(funcaoAtivacao);
@@ -342,19 +340,6 @@ public class RedeNeural implements Cloneable, Serializable{
 
 
    /**
-    * Define se durante o processor de treinamento, a rede vai salvar dados relacionados ao 
-    * erro médio de cada época.
-    * <p>
-    *    O valor padrão é false.
-    * </p>
-    * @param historicoErro se verdadeiro, a rede armazenara o histórico de erros de cada época.
-    */
-   public void configurarHistoricoErros(boolean historicoErro){
-      this.calcularHistoricoErro = historicoErro;
-   }
-
-
-   /**
     * Define se durante o processor de treinamento, a rede vai salvar dados relacionados a 
     * função de custo de cada época.
     * <p>
@@ -367,7 +352,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * @param historicoCusto se verdadeiro, a rede armazenara o histórico de custo de cada época.
     */
    public void configurarHistoricoCusto(boolean historicoCusto){
-      this.calcularHistoricoCusto = historicoCusto;
+      this.treino.calcularHistoricoCusto = historicoCusto;
    }
 
 
@@ -446,7 +431,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * Verifica se o modelo já foi compilado para evitar problemas de uso indevido, bem como componentes nulos.
     * @throws IllegalArgumentException se o modelo não foi compilado.
     */
-   private void modeloValido(){
+   private void modeloCompilado(){
       if(!this.modeloCompilado){
          throw new IllegalArgumentException("O modelo ainda não foi compilado");
       }
@@ -490,7 +475,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * @throws IllegalArgumentException se o tamanho dos dados de entrada for diferente do tamanho dos neurônios de entrada, excluindo o bias.
     */
    public void calcularSaida(double[] dados){
-      modeloValido();
+      modeloCompilado();
       
       if(dados.length != (this.entrada.neuronios.length-BIAS)){
          throw new IllegalArgumentException("As dimensões dos dados de entrada com os neurônios de entrada da rede não são iguais.");
@@ -524,7 +509,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * @throws IllegalArgumentException se houver alguma inconsistência dos dados de entrada e saída para a operação.
     */
    public double calcularPrecisao(double[][] dados, double[][] saida){
-      modeloValido();
+      modeloCompilado();
       consistenciaDados(dados, saida);
 
       return this.avaliador.calcularPrecisao(this, dados, saida);
@@ -541,7 +526,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * @throws IllegalArgumentException se houver alguma inconsistência dos dados de entrada e saída para a operação.
     */
    public double calcularAcuracia(double[][] dados, double[][] saida){
-      modeloValido();
+      modeloCompilado();
       consistenciaDados(dados, saida);
 
       return this.avaliador.calcularAcuracia(this, dados, saida);
@@ -558,7 +543,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * @throws IllegalArgumentException se houver alguma inconsistência dos dados de entrada e saída para a operação.
     */
    public double erroMedioQuadrado(double[][] dados, double[][] saida){
-      modeloValido();
+      modeloCompilado();
       consistenciaDados(dados, saida);
 
       return this.avaliador.erroMedioQuadrado(this, dados, saida);
@@ -575,7 +560,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * @throws IllegalArgumentException se houver alguma inconsistência dos dados de entrada e saída para a operação.
     */
    public double entropiaCruzada(double[][] dados, double[][] saida){
-      modeloValido();
+      modeloCompilado();
       consistenciaDados(dados, saida);
 
       return this.avaliador.entropiaCruzada(this, dados, saida);
@@ -596,7 +581,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * @throws IllegalArgumentException se o valor de épocas for menor que um.
     */
    public void treinar(double[][] entradas, double[][] saidas, int epochs){
-      modeloValido();
+      modeloCompilado();
       consistenciaDados(entradas, saidas);
 
       if(epochs < 1){
@@ -604,193 +589,10 @@ public class RedeNeural implements Cloneable, Serializable{
       }
 
       if(otimizadorAtual.getClass().equals(rna.otimizadores.GradientDescent.class)){
-         treino(entradas, saidas, epochs, false);
-      }else treino(entradas, saidas, epochs, true);
-   }
-
-
-   /**
-    * Treina a rede com a técnica do gradiente estocástico, onde embaralhamos os dados de entrada para tornar o treino "aleatório" 
-    * mas que tende a convergir mais rápido.
-    * @param dados matriz de dados de entrada. Cada linha representa um exemplo de entrada.
-    * @param saida matriz de dados de saída esperados. Cada linha representa o valor de saída correspondente ao exemplo de entrada.
-    * @param epochs número de épocas de treinamento. Uma época é um ciclo completo de treinamento em que todos os exemplos de treinamento são apresentados para a rede.
-    * @param embaralhar define se os índices dos dados serão embaralhados para aplicar o gradiente estocástico.
-    */
-   private void treino(double[][] entradas, double[][] saidas, int epochs, boolean embaralhar){
-      double[] dadosEntrada = new double[entradas[0].length];//tamanho de colunas da entrada
-      double[] dadosSaida = new double[saidas[0].length];//tamanho de colunas da saída
+         treino.treino(this, this.otimizadorAtual, entradas, saidas, epochs, false);
       
-      int[] indices = new int[entradas.length];
-      for(int i = 0; i < indices.length; i++) indices[i] = i;
-
-      //transformar a rede numa lista de camdas pra facilitar minha vida
-      ArrayList<Camada> redec = new ArrayList<>();
-      redec.add(this.entrada);
-      for(Camada camada : this.ocultas) redec.add(camada);
-      redec.add(this.saida);
-
-      int i, j, k;
-      double erroMedio;//salvar no historico
-      for(i = 0; i < epochs; i++){//quantidade de épocas
-         if(embaralhar) embaralharDados(entradas, saidas);
-
-         erroMedio = 0;
-         for(j = 0; j < entradas.length; j++){//percorrer amostras
-            //preencher dados de entrada e saída
-            dadosEntrada = entradas[j];
-            dadosSaida = saidas[j];
-
-            calcularSaida(dadosEntrada);
-            backpropagation(redec, dadosSaida);
-
-            if(calcularHistoricoErro){
-               erroMedio = 0;
-               for(k = 0; k < this.saida.neuronios.length; k++){
-                  erroMedio += this.saida.neuronios[k].erro;
-               }
-            }
-            
-            otimizadorAtual.atualizar(redec, this.TAXA_APRENDIZAGEM, this.TAXA_MOMENTUM);
-         }
-
-         if(calcularHistoricoErro){
-            erroMedio /= (this.entrada.neuronios.length *this.saida.neuronios.length);
-            historicoErro.add(erroMedio);
-         }
-         if(calcularHistoricoCusto){
-            if(this.saida.softmax) historicoCusto.add(entropiaCruzada(entradas, saidas));
-            else historicoCusto.add(erroMedioQuadrado(entradas, saidas));
-         }
-      }
-   }
-
-
-   /**
-    * Dedicado para treino em lote e multithread em implementações futuras.
-    * @param dados conjunto de dados completo.
-    * @param inicio índice de inicio do lote.
-    * @param fim índice final do lote.
-    * @return lote contendo os dados de acordo com os índices fornecidos.
-    */
-    @SuppressWarnings("unused")
-   private double[][] obterSubMatriz(double[][] dados, int inicio, int fim){
-      if(inicio < 0 || fim > dados.length || inicio >= fim){
-         throw new IllegalArgumentException("Índices de início ou fim inválidos.");
-      }
-
-      int linhas = fim - inicio;
-      int colunas = dados[0].length;
-      double[][] subMatriz = new double[linhas][colunas];
-
-      for(int i = 0; i < linhas; i++){
-         for(int j = 0; j < colunas; j++){
-            subMatriz[i][j] = dados[inicio + i][j];
-         }
-      }
-
-      return subMatriz;
-   }
-
-
-   /**
-    * Embaralha os dados da matriz usando o algoritmo Fisher-Yates.
-    * @param entradas matriz com os dados de entrada.
-    * @param saidas matriz com os dados de saída.
-    */
-   private void embaralharDados(double[][] entradas, double[][] saidas){
-      int linhas = entradas.length;
-  
-      //evitar muitas inicializações
-      double tempDados[];
-      double tempSaidas[];
-      int i, indiceAleatorio;
-
-      for(i = linhas - 1; i > 0; i--){
-         indiceAleatorio = random.nextInt(i + 1);
-  
-         tempDados = entradas[i];
-         entradas[i] = entradas[indiceAleatorio];
-         entradas[indiceAleatorio] = tempDados;
-
-         tempSaidas = saidas[i];
-         saidas[i] = saidas[indiceAleatorio];
-         saidas[indiceAleatorio] = tempSaidas;
-      }
-   }
-
-
-   /**
-    * Retropropaga o erro da rede neural de acordo com os dados de entrada e saída esperados.
-    * @param saida array com as saídas esperadas das amostras.
-    * @throws IllegalArgumentException se o tamanho dos dados de saída for diferente do tamanho dos neurônios de saída da rede.
-    */
-   private void backpropagation(ArrayList<Camada> redec, double[] saidas){
-      if(saidas.length != this.saida.neuronios.length){
-         throw new IllegalArgumentException("O tamanho dos dados de saída não corresponde ao tamanho dos neurônios de saída da rede");
-      }
-
-      //erro da saída
-      calcularErroSaida(saidas);
-
-      //erro ocultas
-      //começar da ultima oculta
-      for(int i = redec.size()-2; i >= 1; i--){// percorrer camadas ocultas de trás pra frente
-         
-         Camada camadaAtual = redec.get(i);
-         int qNeuronioAtual = camadaAtual.neuronios.length;
-         if(redec.get(i).temBias) qNeuronioAtual -= 1;
-         for (int j = 0; j < qNeuronioAtual; j++){//percorrer neurônios da camada atual
-         
-            Neuronio neuronio = camadaAtual.neuronios[j];
-            double somaErros = 0.0;
-            for(Neuronio neuronioProximo : redec.get(i+1).neuronios){//percorrer neurônios da camada seguinte
-               somaErros += neuronioProximo.pesos[j] * neuronioProximo.erro;
-            }
-            neuronio.erro = somaErros * camadaAtual.funcaoAtivacaoDx(neuronio.somatorio);
-         }
-      }
-
-      for(int i = 1; i < redec.size(); i++){//percorrer rede 
-         
-         Camada camadaAtual = redec.get(i);
-         Camada camadaAnterior = redec.get(i-1);
-         int nNeuronios = camadaAtual.obterQuantidadeNeuronios();
-         nNeuronios -= (camadaAtual.temBias) ? 1 : 0;
-         for(int j = 0; j < nNeuronios; j++){//percorrer neurônios da camada atual
-            
-            Neuronio neuronio = camadaAtual.neuronios[j];
-            for(int k = 0; k < neuronio.pesos.length; k++){//percorrer pesos do neurônio atual
-               neuronio.gradiente[k] = TAXA_APRENDIZAGEM * neuronio.erro * camadaAnterior.neuronios[k].saida;
-            }
-         }
-      } 
-   }
-
-
-   /**
-    * Método exclusivo para separar a forma de calcular os erros da camada de saída.
-    * Dando suporte não apenas para problemas de regressão.
-    * <p>
-    *    Isso ainda ta em teste para problemas de classificação, para regressão funciona normalmente.
-    * </p>
-    * @param saidas array com as saídas esperadas
-    */
-   private void calcularErroSaida(double[] saidas){
-      if(this.saida.argmax){//classificação
-
-
-      }else if(this.saida.softmax){//classificação
-         for(int i = 0; i < this.saida.neuronios.length; i++){
-            Neuronio neuronio = this.saida.neuronios[i];
-            neuronio.erro = (saidas[i] - neuronio.saida);
-         }
-      
-      }else{//regressão
-         for(int i = 0; i < this.saida.neuronios.length; i++){
-            Neuronio neuronio = this.saida.neuronios[i];
-            neuronio.erro = ((saidas[i] - neuronio.saida) * this.saida.funcaoAtivacaoDx(neuronio.somatorio));
-         }
+      }else{
+         treino.treino(this, this.otimizadorAtual, entradas, saidas, epochs, true);
       }
    }
 
@@ -818,7 +620,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * @throws IllegalArgumentException se o valor de custo mínimo for menor que zero.
     */
    public void diferencaFinita(double[][] treinoEntrada, double[][] treinoSaida, double eps, int epochs, double custoMinimo){
-      modeloValido();
+      modeloCompilado();
       consistenciaDados(treinoEntrada, treinoSaida);
 
       if(eps == 0){
@@ -909,7 +711,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * @throws IllegalArgumentException se o modelo não foi compilado previamente.
     */
    public Camada obterCamadaEntrada(){
-      modeloValido();
+      modeloCompilado();
       return this.entrada;
    }
 
@@ -919,7 +721,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * @throws IllegalArgumentException se o modelo não foi compilado previamente.
     */
    public int obterQuantidadeOcultas(){
-      modeloValido();
+      modeloCompilado();
       return this.ocultas.length;
    }
 
@@ -932,7 +734,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * @throws IllegalArgumentException se o índice estiver fora do alcance do tamanho das camadas ocultas.
     */
    public Camada obterCamadaOculta(int indice){
-      modeloValido();
+      modeloCompilado();
       if((indice < 0) || (indice > this.ocultas.length-1)){
          throw new IllegalArgumentException("O índice fornecido está fora do alcance das camadas disponíveis");
       }
@@ -947,7 +749,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * @throws IllegalArgumentException se o modelo não foi compilado previamente.
     */
    public Camada obterCamadaSaida(){
-      modeloValido();
+      modeloCompilado();
       return this.saida;
    }
 
@@ -959,7 +761,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * @throws IllegalArgumentException se o modelo não foi compilado previamente.
     */
    public double[] obterSaidas(){
-      modeloValido();
+      modeloCompilado();
 
       double saida[] = new double[this.saida.neuronios.length];
       for(int i = 0; i < this.saida.neuronios.length; i++){
@@ -982,7 +784,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * @throws IllegalArgumentException se o modelo não foi compilado previamente.
     */
    public int[] obterArquitetura(){
-      modeloValido();
+      modeloCompilado();
       return this.arquitetura;
    }
 
@@ -1002,7 +804,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * @throws IllegalArgumentException se o modelo não foi compilado previamente.
     */
    public String obterInformacoes(){
-      modeloValido();
+      modeloCompilado();
 
       String buffer = "";
       String espacamento = "    ";
@@ -1038,26 +840,14 @@ public class RedeNeural implements Cloneable, Serializable{
 
 
    /**
-    * @return lista contendo o histórico de erros durante o treinamento da rede.
-    * @throws IllegalArgumentException se não foi habilitado previamente o cálculo do histórico de erros.
-    */
-   public ArrayList<Double> obterHistoricoErro(){
-      if(!calcularHistoricoErro){
-         throw new IllegalArgumentException("Deve ser habilitado o cálculo do histórico de erros para obter os resultados.");
-      }
-      return this.historicoErro;
-   }
-
-
-   /**
     * @return lista contendo o histórico de custos durante o treinamento da rede.
     * @throws IllegalArgumentException se não foi habilitado previamente o cálculo do histórico de custos.
     */
    public ArrayList<Double> obterHistoricoCusto(){
-      if(!calcularHistoricoCusto){
+      if(!this.treino.calcularHistoricoCusto){
          throw new IllegalArgumentException("Deve ser habilitado o cálculo do histórico de custos para obter os resultados.");
       }
-      return this.historicoCusto;
+      return this.treino.obterHistoricoCusto();
    }
 
    
@@ -1068,7 +858,7 @@ public class RedeNeural implements Cloneable, Serializable{
     */
    @Override
    public RedeNeural clone(){
-      modeloValido();
+      modeloCompilado();
 
       try{
          RedeNeural clone = (RedeNeural) super.clone();
@@ -1183,7 +973,7 @@ public class RedeNeural implements Cloneable, Serializable{
 
 
    public String toString(){
-      modeloValido();
+      modeloCompilado();
 
       String buffer = "";
       String espacamento = "   ";
