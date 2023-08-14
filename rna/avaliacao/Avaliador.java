@@ -2,126 +2,104 @@ package rna.avaliacao;
 
 import rna.RedeNeural;
 
-public class Avaliador{
-   AuxiliaresAvaliacao aux;
+import rna.avaliacao.metrica.Acuracia;
+import rna.avaliacao.metrica.ErroMedioAbsoluto;
+import rna.avaliacao.metrica.MatrizConfusao;
 
+import rna.avaliacao.perda.EntropiaCruzada;
+import rna.avaliacao.perda.EntropiaCruzadaBinaria;
+import rna.avaliacao.perda.ErroMedioQuadrado;
+
+
+/**
+ * Interface para os métodos de avaliação e desempenho da rede neural.
+ */
+public class Avaliador{
+   RedeNeural rede;
+
+   //perda
    EntropiaCruzada entropiaCruzada = new EntropiaCruzada();
+   EntropiaCruzadaBinaria entropiaCruzadaBinaria = new EntropiaCruzadaBinaria();
    ErroMedioQuadrado erroMedioQuadrado = new ErroMedioQuadrado();
 
-   public Avaliador(){
-      this.aux = new AuxiliaresAvaliacao();
-   }
+   //métrica
+   Acuracia acuracia = new Acuracia();
+   ErroMedioAbsoluto erroMedioAbsoluto = new ErroMedioAbsoluto();
+   MatrizConfusao matrizConfusao = new MatrizConfusao();
 
 
-   /**
-    * Calcula a precisão da rede neural em relação aos dados de entrada e saída fornecidos (regressão).
-    * @param rede rede neural que será avaliada.
-    * @param entrada dados de entrada.
-    * @param saida dados de saída contendo os resultados respectivos para as entradas.
-    * @return A precisão da rede neural em forma de probabilidade.
-    */
-   public double calcularPrecisao(RedeNeural rede, double[][] entrada, double[][] saida){
-      double[] dadosEntrada = new double[entrada[0].length];
-      double[] dadosSaida = new double[saida[0].length];
-      double erroMedio = 0;
-
-      for(int i = 0; i < entrada.length; i++){//percorrer linhas dos dados
-         System.arraycopy(entrada[i], 0, dadosEntrada, 0, entrada[i].length);
-         System.arraycopy(saida[i], 0, dadosSaida, 0, saida[i].length);
-
-         rede.calcularSaida(dadosEntrada);
-         double[] saidaRede = rede.obterSaidas();
-
-         for(int k = 0; k < saidaRede.length; k++){
-            erroMedio += Math.abs(dadosSaida[k] - saidaRede[k]);
-         }
-      }
-
-      erroMedio /= entrada.length;
-      return (1 - erroMedio); // Converter em um valor relativo a porcentagem
-   }
-
-
-   /**
-    * Calcula a precisão da rede neural em relação aos dados de entrada e saída fornecidos (classificação).
-    * @param rede rede neural que será avaliada.
-    * @param entrada dados de entrada.
-    * @param saida dados de saída contendo os resultados respectivos para as entradas.
-    * @return A acurácia da rede neural em forma de probabilidade.
-    */
-   public double calcularAcuracia(RedeNeural rede, double[][] entrada, double[][] saida){
-      int qAmostras = entrada.length;
-      int acertos = 0;
-      double acuracia;
-      double[] dadosEntrada = new double[entrada[0].length];
-      double[] dadosSaida = new double[saida[0].length];
-
-      for(int i = 0; i < qAmostras; i++){
-         //preencher dados de entrada e saída
-         dadosEntrada = entrada[i];
-         dadosSaida = saida[i];
-
-         rede.calcularSaida(dadosEntrada);
-
-         int indiceCalculado = aux.indiceMaiorValor(rede.obterSaidas());
-         int indiceEsperado = aux.indiceMaiorValor(dadosSaida);
-
-         if(indiceCalculado == indiceEsperado){
-            acertos++;
-         }
-      }
-
-      acuracia = (double)acertos / qAmostras;
-
-      return acuracia;
+   public Avaliador(RedeNeural rede){
+      this.rede = rede;
    }
 
 
    /**
     * Calcula o erro médio quadrado da rede neural em relação aos dados de entrada e saída fornecidos.
-    * @param rede rede neural que será avaliada.
     * @param dados dados de entrada.
     * @param saida dados de saída contendo os resultados respectivos para as entradas.
     * @return erro médio quadrado da rede em relação ao dados fornecidos (custo/perda).
     */
-   public double erroMedioQuadrado(RedeNeural rede, double[][] entrada, double[][] saida){
-      return erroMedioQuadrado.calcular(rede, entrada, saida);
+   public double erroMedioQuadrado(double[][] entrada, double[][] saida){
+      return erroMedioQuadrado.calcular(this.rede, entrada, saida);
    }
 
 
    /**
-    * Calcula a entropia cruzada da rede neural em relação aos dados de entrada e saída fornecidos
-    * @param rede rede neural que será avaliada.
+    * Calcula o erro médio absoluto entre as saídas previstas pela rede neural e os valores reais.
+    * @param entrada dados de entrada.
+    * @param saida dados de saída contendo os resultados respectivos para as entradas.
+    * @return A precisão da rede neural em forma de probabilidade.
+    */
+   public double erroMedioAbsoluto(double[][] entrada, double[][] saida){
+      return erroMedioAbsoluto.calcular(this.rede, entrada, saida);
+   }
+
+
+   /**
+    * Calcula a precisão da rede neural em relação aos dados de entrada e saída fornecidos (classificação).
+    * @param entrada dados de entrada.
+    * @param saida dados de saída contendo os resultados respectivos para as entradas.
+    * @return A acurácia da rede neural em forma de probabilidade.
+    */
+   public double acuracia(double[][] entrada, double[][] saida){
+      return acuracia.calcular(this.rede, entrada, saida);
+   }
+
+
+   /**
+    * Calcula a entropia cruzada entre as saídas previstas pela rede neural
+    * e as saídas reais fornecidas.
     * @param dados dados de entrada.
     * @param saida dados de saída contendo os resultados respectivos para as entradas.
     * @return entropia cruzada da rede em relação ao dados fornecidos (custo/perda).
     */
-   public double entropiaCruzada(RedeNeural rede, double[][] entrada, double[][] saida){  
-      return entropiaCruzada.calcular(rede, entrada, saida);
+   public double entropiaCruzada(double[][] entrada, double[][] saida){  
+      return entropiaCruzada.calcular(this.rede, entrada, saida);
    }
 
 
-   public int[][] matrizConfusao(RedeNeural rede, double[][] entradas, double[][] saidas){
-      int nClasses = saidas[0].length;
-      int[][] matriz = new int[nClasses][nClasses];
+   /**
+    * Calcula a entropia cruzada binária entre as saídas previstas pela rede neural
+    * e as saídas reais fornecidas.
+    * @param entrada Os dados de entrada para os quais a rede neural calculará as saídas.
+    * @param saida As saídas reais correspondentes aos dados de entrada.
+    * @return valor da entropia cruzada binária.
+    */
+   public double EntropiaCruzadaBinaria(double[][] entrada, double[][] saida){
+      return entropiaCruzadaBinaria.calcular(this.rede, entrada, saida);
+   }
 
-      double[] entrada = new double[entradas[0].length];
-      double[] saida = new double[saidas[0].length];
-      double[] saidaRede = new double[rede.obterCamadaSaida().obterQuantidadeNeuronios()];
-
-      for(int i = 0; i < entradas.length; i++){
-         System.arraycopy(entradas[i], 0, entrada, 0, entradas[i].length);
-         System.arraycopy(saidas[i], 0, saida, 0, saidas[i].length);
-
-         rede.calcularSaida(entrada);
-         saidaRede = rede.obterSaidas();
-
-         int real = aux.indiceMaiorValor(saida);
-         int previsto = aux.indiceMaiorValor(saidaRede);
-
-         matriz[real][previsto]++;
-      }
-
-      return matriz;
+   /**
+    * Calcula a matriz de confusão para avaliar o desempenho da rede em classificação.
+    *
+    * A matriz de confusão mostra a contagem de amostras que foram classificadas de forma correta ou não em cada classe.
+    * As linhas representam as classes reais e as colunas as classes previstas pela rede.
+    * @param entradas matriz com os dados de entrada 
+    * @param saidas matriz com os dados de saída
+    * @return matriz de confusão para avaliar o desempenho do modelo.
+    * @throws IllegalArgumentException se o modelo não foi compilado previamente.
+    */
+   public int[][] matrizConfusao(double[][] entradas, double[][] saidas){
+      return matrizConfusao.calcularMatriz(this.rede, entradas, saidas);
    } 
 }

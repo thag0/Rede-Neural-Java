@@ -56,8 +56,17 @@ public class RedeNeural implements Cloneable, Serializable{
 
    private String nome = getClass().getSimpleName();
    
-   private Avaliador avaliador = new Avaliador();
    private Treino treino = new Treino();
+
+   /**
+    * Objeto responsável pelas métricas e perdas da rede neural.
+    * Contém implementações de métodos tanto para cálculo de perdas
+    * quanto para cálculo de métricas.
+    * <p>
+    * Cada instância de rede neural possui seu próprio avaliador.
+    * </p>
+    */
+   public Avaliador avaliador = new Avaliador(this);
 
    Random random = new Random();//treino embaralhado
 
@@ -522,77 +531,6 @@ public class RedeNeural implements Cloneable, Serializable{
       //ativar neurônios da saída
       this.saida.ativarNeuronios(this.ocultas[this.ocultas.length-1]);
    }
-
-   
-   /**
-    * Calcula a precisão da rede neural com base nos dados fornecidos.
-    * A precisão é calculada como a média do erro absoluto entre a saída prevista pela rede e a saída fornecida.
-    * Esse método pode ser adequado para tarefas de regressão, mas não é uma boa abordagem em problemas de classificação
-    * ou quando as saídas são valores discretos ou categóricos.
-    * @param entrada matriz com os dados de entrada.
-    * @param saida matriz com os dados de saída.
-    * @return precisão obtida com base nos dados fornecidos, um valor entre 0 e 1, onde 1 representa a máxima precisão.
-    * @throws IllegalArgumentException se o modelo não foi compilado previamente.
-    * @throws IllegalArgumentException se houver alguma inconsistência dos dados de entrada e saída para a operação.
-    */
-   public double calcularPrecisao(double[][] entrada, double[][] saida){
-      modeloCompilado();
-      consistenciaDados(entrada, saida);
-
-      return this.avaliador.calcularPrecisao(this, entrada, saida);
-   }
-
-
-   /**
-    * Calcula a acurácia da rede neural com base nos dados fornecidos. Calcula comparando o índice
-    * de maior valor que a rede computou e avalia se corresponde ao valor desejado.
-    * Essa função é adequada para problemas de classificação.
-    * @param entrada matriz com os dados de entrada.
-    * @param saida matriz com os dados de saída.
-    * @return acurária obtida com base nos dados fornecidos, um valor entre 0 e 1, onde 1 representa a máxima precisão.
-    * @throws IllegalArgumentException se o modelo não foi compilado previamente.
-    * @throws IllegalArgumentException se houver alguma inconsistência dos dados de entrada e saída para a operação.
-    */
-   public double calcularAcuracia(double[][] entrada, double[][] saida){
-      modeloCompilado();
-      consistenciaDados(entrada, saida);
-
-      return this.avaliador.calcularAcuracia(this, entrada, saida);
-   }
-   
-
-   /**
-    * Calcula a função de custo baseada nos dados de entrada e na saída esperada para eles por 
-    * meio do erro médio quadrado.
-    * @param entrada matriz de dados de entrada.
-    * @param saida matriz dos dados de saída.
-    * @return valor de custo da rede baseado no erro médio quadrado.
-    * @throws IllegalArgumentException se o modelo não foi compilado previamente.
-    * @throws IllegalArgumentException se houver alguma inconsistência dos dados de entrada e saída para a operação.
-    */
-   public double erroMedioQuadrado(double[][] entrada, double[][] saida){
-      modeloCompilado();
-      consistenciaDados(entrada, saida);
-
-      return this.avaliador.erroMedioQuadrado(this, entrada, saida);
-   }
-
-
-   /**
-    * Calcula a função de custo baseada nos dados de entrada e na saída esperada para eles por 
-    * meio da entropia cruzada.
-    * @param entrada matriz de dados de entrada.
-    * @param saida matriz dos dados de saída.
-    * @return valor de custo da rede baseado na entropia cruzada.
-    * @throws IllegalArgumentException se o modelo não foi compilado previamente.
-    * @throws IllegalArgumentException se houver alguma inconsistência dos dados de entrada e saída para a operação.
-    */
-   public double entropiaCruzada(double[][] entrada, double[][] saida){
-      modeloCompilado();
-      consistenciaDados(entrada, saida);
-
-      return this.avaliador.entropiaCruzada(this, entrada, saida);
-   }
   
 
    /**
@@ -713,7 +651,7 @@ public class RedeNeural implements Cloneable, Serializable{
       camadasGradiente.add(redeG.saida);
 
       for(int epocas = 0; epocas < epochs; epocas++){
-         double custo = this.erroMedioQuadrado(entradas, saidas);
+         double custo = avaliador.erroMedioQuadrado(entradas, saidas);
          if(custo < custoMinimo) break;
 
          double valorAnterior = 0;
@@ -723,7 +661,7 @@ public class RedeNeural implements Cloneable, Serializable{
                for(int k = 0; k < camadasRede.get(i).neuronios[j].pesos.length; k++){//percorrer pesos do neuronio
                   valorAnterior = camadasRede.get(i).neuronios[j].pesos[k];
                   camadasRede.get(i).neuronios[j].pesos[k] += eps;
-                  camadasGradiente.get(i).neuronios[j].pesos[k] = ((erroMedioQuadrado(entradas, saidas) - custo)/eps);//derivada da função de custo
+                  camadasGradiente.get(i).neuronios[j].pesos[k] = ((avaliador.erroMedioQuadrado(entradas, saidas) - custo)/eps);//derivada da função de custo
                   camadasRede.get(i).neuronios[j].pesos[k] = valorAnterior;
                }
             }
@@ -872,22 +810,6 @@ public class RedeNeural implements Cloneable, Serializable{
          throw new IllegalArgumentException("Deve ser habilitado o cálculo do histórico de custos para obter os resultados.");
       }
       return this.treino.obterHistoricoCusto();
-   }
-
-
-   /**
-    * Calcula a matriz de confusão para avaliar o desempenho da rede em classificação.
-    *
-    * A matriz de confusão mostra a contagem de amostras que foram classificadas de forma correta ou não em cada classe.
-    * As linhas representam as classes reais e as colunas as classes previstas pela rede.
-    * @param entradas matriz com os dados de entrada 
-    * @param saidas matriz com os dados de saída
-    * @return matriz de confusão para avaliar o desempenho do modelo.
-    * @throws IllegalArgumentException se o modelo não foi compilado previamente.
-    */
-   public int[][] obterMatrizConfusao(double[][] entradas, double[][] saidas){
-      modeloCompilado();
-      return this.avaliador.matrizConfusao(this, entradas, saidas);
    }
 
 

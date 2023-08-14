@@ -67,8 +67,8 @@ public class Treino{
 
          //feedback de avanço da rede
          if(calcularHistoricoCusto){
-            if(rede.obterCamadaSaida().softmax) historicoCusto.add(rede.entropiaCruzada(entradas, saidas));
-            else historicoCusto.add(rede.erroMedioQuadrado(entradas, saidas));
+            if(rede.obterCamadaSaida().softmax) historicoCusto.add(rede.avaliador.entropiaCruzada(entradas, saidas));
+            else historicoCusto.add(rede.avaliador.erroMedioQuadrado(entradas, saidas));
          }
       }
    }
