@@ -7,24 +7,26 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 import java.util.ArrayList;
-import java.util.Random;
+
+import rna.treinamento.Treino;
 
 import rna.avaliacao.Avaliador;
+
 import rna.otimizadores.AdaGrad;
 import rna.otimizadores.Adam;
 import rna.otimizadores.GradientDescent;
 import rna.otimizadores.Otimizador;
 import rna.otimizadores.RMSProp;
 import rna.otimizadores.SGD;
-import rna.treinamento.Treino;
 
 //TODO
-//Implementar formas melhores de treinar com uma grande quantidade de dados.
-//Formas mais elaboradas de otmizadores.
-//Suporte ao treino da rede usando argmax ou softmax na saída
+//Implementar formas melhores de treinar com uma grande quantidade de dados;
+//Formas mais elaboradas de otmizadores;
+//Mais opções de métricas e funções de perda;
+//Poder configurar funções de ativação antes de compilar o modelo;
 
 /**
- * Modelo de Rede Neural Multilayer Perceptron baseado em feedforward criado do zero. Possui um conjunto de camadas 
+ * Modelo de Rede Neural Multilayer Perceptron criado do zero. Possui um conjunto de camadas 
  * e cada camada possui um conjunto de neurônios artificiais.
  * <p>
  *    O modelo pode ser usado para problemas de regressão e classificação, contando com algoritmos de treino 
@@ -69,8 +71,6 @@ public class RedeNeural implements Cloneable, Serializable{
     */
    public Avaliador avaliador = new Avaliador(this);
 
-   Random random = new Random();//treino embaralhado
-
 
    /**
     * <p>
@@ -85,10 +85,10 @@ public class RedeNeural implements Cloneable, Serializable{
     *   Os valores de todos os parâmetros pedidos <strong>NÃO devem</strong> ser menores que 1.
     * </p>
     * <p>
-    *    Após instanciar o modelo, é necessário compilar por meio da função <pre>compilar()</pre>
+    *    Após instanciar o modelo, é necessário compilar por meio da função {@code compilar()};
     * </p>
     * <p>
-    *    Certifique-se de configurar as propriedades da rede por meio das funções de configuração fornecidas
+    *    Certifique-se de configurar as propriedades da rede por meio das funções de configuração fornecidas 
     *    como, alcance dos pesos iniciais, taxa de aprendizagem e uso de bias. Caso não seja usada nenhuma 
     *    das funções de configuração, a rede será compilada com os valores padrão.
     * </p>
@@ -106,6 +106,7 @@ public class RedeNeural implements Cloneable, Serializable{
 
       int quantidadeOcultas = arquitetura.length-2;//evitar problemas
       this.arquitetura = new int[1 + quantidadeOcultas + 1];
+
       this.arquitetura[0] = arquitetura[0];
       for(int i = 0; i < quantidadeOcultas; i++) this.arquitetura[i+1] = arquitetura[i+1];
       this.arquitetura[this.arquitetura.length-1] = arquitetura[arquitetura.length-1];
@@ -121,7 +122,7 @@ public class RedeNeural implements Cloneable, Serializable{
     *   Os valores de todos os parâmetros pedidos <strong>NÃO devem</strong> ser menores que 1.
     * </p>
     * <p>
-    *    Após instanciar o modelo, é necessário compilar por meio da função <pre>compilar()</pre>
+    *    Após instanciar o modelo, é necessário compilar por meio da função {@code compilar()}
     * </p>
     * <p>
     *    Certifique-se de configurar as propriedades da rede por meio das funções de configuração fornecidas
@@ -223,8 +224,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * @param usarBias novo valor para o uso do bias.
     */
    public void configurarBias(boolean usarBias){
-      if(usarBias) this.BIAS = 1;
-      else this.BIAS = 0;
+      this.BIAS = (usarBias) ? 1 : 0;
    }
 
 
@@ -289,13 +289,14 @@ public class RedeNeural implements Cloneable, Serializable{
     *    <li>9 - Seno.</li>
     *    <li>10 - Argmax.</li>
     *    <li>11 - Softmax.</li>
+    *    <li>12 - Softplus.</li>
     * </ul>
     * @param camada camada que será configurada.
     * @param ativacao valor relativo a lista de ativações disponíveis.
     * @throws IllegalArgumentException se o modelo não foi compilado previamente.
     */
    public void configurarFuncaoAtivacao(Camada camada, int ativacao){
-      modeloCompilado();
+      this.modeloCompilado();
       if(camada.equals(this.entrada)){
          throw new IllegalArgumentException("Não é possível configurar função de ativação para a camada de entrada.");
       } 
@@ -322,12 +323,13 @@ public class RedeNeural implements Cloneable, Serializable{
     *    <li>9 - Seno.</li>
     *    <li>10 - Argmax.</li>
     *    <li>11 - Softmax.</li>
+    *    <li>12 - Softplus.</li>
     * </ul>
     * @param ativacao valor relativo a lista de ativações disponíveis.
     * @throws IllegalArgumentException se o modelo não foi compilado previamente.
     */
    public void configurarFuncaoAtivacao(int ativacao){
-      modeloCompilado();
+      this.modeloCompilado();
       
       for(Camada camada : this.ocultas) camada.configurarAtivacao(ativacao);
       this.saida.configurarAtivacao(ativacao);
@@ -354,12 +356,12 @@ public class RedeNeural implements Cloneable, Serializable{
     */
    public void configurarOtimizador(int otimizador){
       switch(otimizador){
-         case 1: this.otimizadorAtual = new GradientDescent(); break;
-         case 2: this.otimizadorAtual = new SGD(); break;
-         case 3: this.otimizadorAtual = new AdaGrad(); break;
-         case 4: this.otimizadorAtual = new RMSProp(); break;
-         case 5: this.otimizadorAtual = new Adam(); break;
-         default: throw new IllegalArgumentException("Valor fornecido do otimizador é inválido.");
+         case 1 -> this.otimizadorAtual = new GradientDescent();
+         case 2 -> this.otimizadorAtual = new SGD();
+         case 3 -> this.otimizadorAtual = new AdaGrad();
+         case 4 -> this.otimizadorAtual = new RMSProp();
+         case 5 -> this.otimizadorAtual = new Adam();
+         default-> throw new IllegalArgumentException("Valor fornecido do otimizador é inválido.");
       }
    }
 
@@ -385,12 +387,12 @@ public class RedeNeural implements Cloneable, Serializable{
     */
    public void configurarOtimizador(int otimizador, boolean nesterov){
       switch(otimizador){
-         case 1: this.otimizadorAtual = new GradientDescent(); break;
-         case 2: this.otimizadorAtual = new SGD(nesterov); break;
-         case 3: this.otimizadorAtual = new AdaGrad(); break;
-         case 4: this.otimizadorAtual = new RMSProp(); break;
-         case 5: this.otimizadorAtual = new Adam(); break;
-         default: throw new IllegalArgumentException("Valor fornecido do otimizador é inválido.");
+         case 1 -> this.otimizadorAtual = new GradientDescent();
+         case 2 -> this.otimizadorAtual = new SGD(nesterov);
+         case 3 -> this.otimizadorAtual = new AdaGrad();
+         case 4 -> this.otimizadorAtual = new RMSProp();
+         case 5 -> this.otimizadorAtual = new Adam();
+         default-> throw new IllegalArgumentException("Valor fornecido do otimizador é inválido.");
       }
 
       this.nesterov = nesterov;
@@ -442,11 +444,9 @@ public class RedeNeural implements Cloneable, Serializable{
     * </p>
     */
    public void compilar(){
-      //pode ser melhor encapsular a inicialização dos
-      //neurônios dentro da camada
-      //mas isso pode dar trabalho demais
 
       //adicionando bias como neuronio adicional nas camadas
+      //não adicionar na camada de saída
       for(int i = 0; i < arquitetura.length-1; i++){
          arquitetura[i] += BIAS;
       }
@@ -456,34 +456,23 @@ public class RedeNeural implements Cloneable, Serializable{
       
       //inicializar camada de entrada
       this.entrada = new Camada(temBias);
-      this.entrada.neuronios = new Neuronio[arquitetura[0]];
-      for(int i = 0; i < this.entrada.neuronios.length; i++){
-         //pesos e entradas nao importam na camada de entrada
-         this.entrada.neuronios[i] = new Neuronio(1, alcancePeso, inicializadorPeso);
-      }
+      this.entrada.inicializarNeuronios(arquitetura[0], 1, alcancePeso, inicializadorPeso);
 
       //inicializar camadas ocultas
       int quantidadeOcultas = this.arquitetura.length-2;
       this.ocultas = new Camada[quantidadeOcultas];
       for(int i = 0; i < this.ocultas.length; i++){// percorrer ocultas
          Camada novaOculta = new Camada(temBias);
-         novaOculta.neuronios = new Neuronio[arquitetura[i+1]];
-      
-         // inicializar neuronios da camada
-         for (int j = 0; j < novaOculta.neuronios.length; j++){
-            if (i == 0) novaOculta.neuronios[j] = new Neuronio(arquitetura[0], alcancePeso, inicializadorPeso);// neuronios da entrada
-            else novaOculta.neuronios[j] = new Neuronio(arquitetura[i], alcancePeso, inicializadorPeso);// neuronios da oculta anterior
-         }
+
+         if(i == 0) novaOculta.inicializarNeuronios(arquitetura[i+1], arquitetura[0], alcancePeso, inicializadorPeso);
+         else novaOculta.inicializarNeuronios(arquitetura[i+1], arquitetura[i], alcancePeso, inicializadorPeso);
+
          this.ocultas[i] = novaOculta;
       }
 
       //inicializar camada de saída
       this.saida = new Camada(false);
-      this.saida.neuronios = new Neuronio[arquitetura[arquitetura.length-1]];
-      for(int i = 0; i < this.saida.neuronios.length; i++){
-         // neuronios da ultima oculta
-         this.saida.neuronios[i] = new Neuronio(arquitetura[arquitetura.length-2], alcancePeso, inicializadorPeso);
-      }
+      this.saida.inicializarNeuronios(arquitetura[arquitetura.length-1], arquitetura[arquitetura.length-2], alcancePeso, inicializadorPeso);
 
       modeloCompilado = true;//modelo pode ser usado
    }
@@ -515,7 +504,7 @@ public class RedeNeural implements Cloneable, Serializable{
     */
    private void consistenciaDados(double[][] dadosEntrada, double[][] dadosSaida){
       int nEntrada = this.obterCamadaEntrada().obterQuantidadeNeuronios();
-      nEntrada -= (this.obterCamadaEntrada().temBias) ? 1 : 0;
+      nEntrada -= (this.obterCamadaEntrada().temBias()) ? 1 : 0;
       int nSaida = this.obterCamadaSaida().obterQuantidadeNeuronios();
 
       if(dadosEntrada.length != dadosSaida.length){
@@ -541,14 +530,14 @@ public class RedeNeural implements Cloneable, Serializable{
     * @throws IllegalArgumentException se o tamanho dos dados de entrada for diferente do tamanho dos neurônios de entrada, excluindo o bias.
     */
    public void calcularSaida(double[] entradas){
-      modeloCompilado();
+      this.modeloCompilado();
       
-      if(entradas.length != (this.entrada.neuronios.length-BIAS)){
+      if(entradas.length != (this.entrada.obterQuantidadeNeuronios()-BIAS)){
          throw new IllegalArgumentException("As dimensões dos dados de entrada com os neurônios de entrada da rede não são iguais.");
       }
 
       //carregar dados na camada de entrada
-      for(int i = 0; i < (this.entrada.neuronios.length-BIAS); i++){
+      for(int i = 0; i < (this.entrada.obterQuantidadeNeuronios()-BIAS); i++){
          this.entrada.neuronios[i].saida = entradas[i];
       }
       
@@ -576,7 +565,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * @return matriz contendo os resultados das predições da rede.
     */
    public double[][] calcularSaida(double[][] entradas){
-      modeloCompilado();
+      this.modeloCompilado();
 
       if(entradas[0].length != (this.entrada.neuronios.length-BIAS)){
          throw new IllegalArgumentException("As dimensões dos dados de entrada com os neurônios de entrada da rede não são iguais.");
@@ -617,7 +606,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * @throws IllegalArgumentException se o valor de épocas for menor que um.
     */
    public void treinar(double[][] entradas, double[][] saidas, int epochs){
-      modeloCompilado();
+      this.modeloCompilado();
       consistenciaDados(entradas, saidas);
 
       if(epochs < 1) throw new IllegalArgumentException("O valor de epochs deve ser maior que zero.");
@@ -651,7 +640,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * @throws IllegalArgumentException se o valor de épocas for menor que um.
     */
    public void treinar(double[][] entradas, double[][] saidas, int epochs, int tamanhoLote){
-      modeloCompilado();
+      this.modeloCompilado();
       consistenciaDados(entradas, saidas);
 
       if(epochs < 1){
@@ -694,7 +683,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * @throws IllegalArgumentException se o valor de custo mínimo for menor que zero.
     */
    public void diferencaFinita(double[][] entradas, double[][] saidas, double eps, int epochs, double custoMinimo){
-      modeloCompilado();
+      this.modeloCompilado();
       consistenciaDados(entradas, saidas);
 
       if(eps == 0){
@@ -785,7 +774,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * @throws IllegalArgumentException se o modelo não foi compilado previamente.
     */
    public Camada obterCamadaEntrada(){
-      modeloCompilado();
+      this.modeloCompilado();
       return this.entrada;
    }
 
@@ -795,7 +784,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * @throws IllegalArgumentException se o modelo não foi compilado previamente.
     */
    public int obterQuantidadeOcultas(){
-      modeloCompilado();
+      this.modeloCompilado();
       return this.ocultas.length;
    }
 
@@ -808,7 +797,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * @throws IllegalArgumentException se o índice estiver fora do alcance do tamanho das camadas ocultas.
     */
    public Camada obterCamadaOculta(int indice){
-      modeloCompilado();
+      this.modeloCompilado();
       if((indice < 0) || (indice > this.ocultas.length-1)){
          throw new IllegalArgumentException("O índice fornecido está fora do alcance das camadas disponíveis");
       }
@@ -823,7 +812,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * @throws IllegalArgumentException se o modelo não foi compilado previamente.
     */
    public Camada obterCamadaSaida(){
-      modeloCompilado();
+      this.modeloCompilado();
       return this.saida;
    }
 
@@ -835,7 +824,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * @throws IllegalArgumentException se o modelo não foi compilado previamente.
     */
    public double[] obterSaidas(){
-      modeloCompilado();
+      this.modeloCompilado();
 
       double saida[] = new double[this.saida.neuronios.length];
       for(int i = 0; i < this.saida.neuronios.length; i++){
@@ -858,7 +847,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * @throws IllegalArgumentException se o modelo não foi compilado previamente.
     */
    public int[] obterArquitetura(){
-      modeloCompilado();
+      this.modeloCompilado();
       return this.arquitetura;
    }
 
@@ -886,7 +875,7 @@ public class RedeNeural implements Cloneable, Serializable{
 
 
    /**
-    * Exibe as informações importantes da rede neural como:
+    * Exibe algumas informações importantes sobre a Rede Neural, como:
     * <ul>
     *    <li>Otimizador atual.</li>
     *    <li>Valor da taxa de aprendizagem.</li>
@@ -900,7 +889,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * @throws IllegalArgumentException se o modelo não foi compilado previamente.
     */
    public String obterInformacoes(){
-      modeloCompilado();
+      this.modeloCompilado();
 
       String buffer = "";
       String espacamento = "    ";
@@ -942,7 +931,7 @@ public class RedeNeural implements Cloneable, Serializable{
     */
    @Override
    public RedeNeural clone(){
-      modeloCompilado();
+      this.modeloCompilado();
 
       try{
          RedeNeural clone = (RedeNeural) super.clone();
@@ -979,10 +968,9 @@ public class RedeNeural implements Cloneable, Serializable{
     * @return clone da camada fornecida.
     */
    private Camada cloneCamada(Camada camada){
-      Camada clone = new Camada(camada.temBias);
+      Camada clone = new Camada(camada.temBias());
       clone.neuronios = new Neuronio[camada.neuronios.length];
       clone.ativacao = camada.ativacao;
-      clone.temBias = camada.temBias;
 
       for (int i = 0; i < camada.neuronios.length; i++) {
          clone.neuronios[i] = cloneNeuronio(camada.neuronios[i]);
@@ -1001,12 +989,13 @@ public class RedeNeural implements Cloneable, Serializable{
       Neuronio clone = new Neuronio(neuronio.pesos.length, this.alcancePeso, this.inicializadorPeso);
 
       //método nativo mais eficiente na cópia de vetores
+      System.arraycopy(neuronio.entradas, 0, clone.entradas, 0, clone.entradas.length);
       System.arraycopy(neuronio.pesos, 0, clone.pesos, 0, clone.pesos.length);
       System.arraycopy(neuronio.momentum, 0, clone.momentum, 0, clone.momentum.length);
       System.arraycopy(neuronio.acumuladorGradiente, 0, clone.acumuladorGradiente, 0, clone.acumuladorGradiente.length);
       System.arraycopy(neuronio.acumuladorSegundaOrdem, 0, clone.acumuladorSegundaOrdem, 0, clone.acumuladorSegundaOrdem.length);
       System.arraycopy(neuronio.gradiente, 0, clone.gradiente, 0, clone.gradiente.length);
-      System.arraycopy(neuronio.gradienteAcumulado, 0, clone.gradienteAcumulado, 0, clone.gradienteAcumulado.length);  
+      System.arraycopy(neuronio.gradienteAcumulado, 0, clone.gradienteAcumulado, 0, clone.gradienteAcumulado.length); 
 
       return clone;
    }
@@ -1058,8 +1047,9 @@ public class RedeNeural implements Cloneable, Serializable{
    }
 
 
+   @Override
    public String toString(){
-      modeloCompilado();
+      this.modeloCompilado();
 
       String buffer = "";
       String espacamento = "   ";

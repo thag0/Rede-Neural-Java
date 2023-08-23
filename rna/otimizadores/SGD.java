@@ -27,10 +27,10 @@ public class SGD extends Otimizador{
          
          Camada camadaAtual = redec.get(i);
          int nNeuronios = camadaAtual.obterQuantidadeNeuronios();
-         nNeuronios -= (camadaAtual.temBias) ? 1 : 0;
+         nNeuronios -= (camadaAtual.temBias()) ? 1 : 0;
          for(int j = 0; j < nNeuronios; j++){//percorrer neurônios da camada atual
             
-            Neuronio neuronio = camadaAtual.neuronios[j];
+            Neuronio neuronio = camadaAtual.neuronio(j);
             for(int k = 0; k < neuronio.pesos.length; k++){//percorrer pesos do neurônio atual
                if(nesterov){
                   double momentumAnterior = neuronio.momentum[k];

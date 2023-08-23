@@ -67,7 +67,7 @@ public class Treino{
 
          //feedback de avanço da rede
          if(calcularHistoricoCusto){
-            if(rede.obterCamadaSaida().softmax) historicoCusto.add(rede.avaliador.entropiaCruzada(entradas, saidas));
+            if(rede.obterCamadaSaida().temSoftmax()) historicoCusto.add(rede.avaliador.entropiaCruzada(entradas, saidas));
             else historicoCusto.add(rede.avaliador.erroMedioQuadrado(entradas, saidas));
          }
       }
@@ -83,10 +83,10 @@ public class Treino{
     * @param saidas dados de saída correspondente as entradas para o treino.
     * @param epochs quantidade de épocas de treinamento.
     * @param embaralhar embaralhar dados de treino para cada época.
-    * @param tamanhoLote tamanho do lote.
+    * @param tamLote tamanho do lote.
     */
-   public void treino(RedeNeural rede, Otimizador otimizador, double[][] entradas, double[][] saidas, int epochs, boolean embaralhar, int tamanhoLote){
-      treinoLote.treino(rede, otimizador, entradas, saidas, epochs, embaralhar, tamanhoLote);
+   public void treino(RedeNeural rede, Otimizador otimizador, double[][] entradas, double[][] saidas, int epochs, boolean embaralhar, int tamLote){
+      treinoLote.treino(rede, otimizador, entradas, saidas, epochs, embaralhar, tamLote);
    }
 
 
@@ -138,12 +138,12 @@ public class Treino{
 
          //não precisa e nem faz diferença calcular os gradientes dos bias
          int nNeuronios = camadaAtual.obterQuantidadeNeuronios();
-         nNeuronios -= (camadaAtual.temBias) ? 1 : 0;
+         nNeuronios -= (camadaAtual.temBias()) ? 1 : 0;
          for(int j = 0; j < nNeuronios; j++){//percorrer neurônios da camada atual
             
-            Neuronio neuronio = camadaAtual.neuronios[j];
+            Neuronio neuronio = camadaAtual.neuronio(j);
             for(int k = 0; k < neuronio.pesos.length; k++){//percorrer pesos do neurônio atual
-               neuronio.gradiente[k] = taxaAprendizagem * neuronio.erro * camadaAnterior.neuronios[k].saida;
+               neuronio.gradiente[k] = taxaAprendizagem * neuronio.erro * camadaAnterior.neuronio(k).saida;
             }
          }
       }

@@ -53,7 +53,7 @@ public class TreinoLote{
 
          //feedback de avanço da rede
          if(calcularHistoricoCusto){
-            if(rede.obterCamadaSaida().softmax) historicoCusto.add(rede.avaliador.entropiaCruzada(entradas, saidas));
+            if(rede.obterCamadaSaida().temSoftmax()) historicoCusto.add(rede.avaliador.entropiaCruzada(entradas, saidas));
             else historicoCusto.add(rede.avaliador.erroMedioQuadrado(entradas, saidas));
          }
       }
@@ -108,12 +108,12 @@ public class TreinoLote{
 
          //não precisa e nem faz diferença calcular os gradientes dos bias
          int nNeuronios = camadaAtual.obterQuantidadeNeuronios();
-         nNeuronios -= (camadaAtual.temBias) ? 1 : 0;
+         nNeuronios -= (camadaAtual.temBias()) ? 1 : 0;
          for(int j = 0; j < nNeuronios; j++){//percorrer neurônios da camada atual
             
-            Neuronio neuronio = camadaAtual.neuronios[j];
+            Neuronio neuronio = camadaAtual.neuronio(j);
             for(int k = 0; k < neuronio.pesos.length; k++){//percorrer pesos do neurônio atual
-               neuronio.gradienteAcumulado[k] += taxaAprendizagem * neuronio.erro * camadaAnterior.neuronios[k].saida;
+               neuronio.gradienteAcumulado[k] += taxaAprendizagem * neuronio.erro * camadaAnterior.neuronio(k).saida;
             }
          }
       }
@@ -130,10 +130,10 @@ public class TreinoLote{
          
          Camada camadaAtual = redec.get(i);
          int nNeuronios = camadaAtual.obterQuantidadeNeuronios();
-         nNeuronios -= (camadaAtual.temBias) ? 1 : 0;
+         nNeuronios -= (camadaAtual.temBias()) ? 1 : 0;
          for(int j = 0; j < nNeuronios; j++){//percorrer neurônios da camada atual
             
-            Neuronio neuronio = camadaAtual.neuronios[j];
+            Neuronio neuronio = camadaAtual.neuronio(j);
             for(int k = 0; k < neuronio.pesos.length; k++){//percorrer pesos do neurônio atual
                neuronio.gradiente[k] = (neuronio.gradienteAcumulado[k] / tamanhoLote);
             }

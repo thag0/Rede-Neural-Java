@@ -26,6 +26,10 @@ public class Neuronio implements Serializable{
    /**
     * Instancia um neurônio individual da rede, com pesos aleatórios para cada ligação.
     * <p>
+    *    A quantidade de entradas dos neurônios corresponde as saídas dos neurônios da camada anterior
+    *    respectivamente.
+    * </p>
+    * <p>
     *    É necessário configurar o otimizador previamente, opções atualmente disponíveis:
     * </p>
     * <ul>
@@ -51,16 +55,26 @@ public class Neuronio implements Serializable{
 
       this.pesos = new double[ligacoes];
       switch(otimizador){
-         case 0: inicializacaoAleatoria(alcancePeso); break;
-         case 1: inicializacaoHe(ligacoes); break;
-         case 2: inicializacaoLeCun(ligacoes); break;
-
-         default:
-            throw new IllegalArgumentException("Otimizador fornecido para otimização dos pesos é inválido.");
+         case 0 -> inicializacaoAleatoria(alcancePeso);
+         case 1 -> inicializacaoHe(ligacoes);
+         case 2 -> inicializacaoLeCun(ligacoes);
+         default -> throw new IllegalArgumentException("Otimizador fornecido para otimização dos pesos é inválido.");
       }
    
-      this.saida = 1; // considerar que pode ter bias aplicado ao modelo
+      this.saida = 1; //considerar que pode ter bias aplicado ao modelo
       this.erro = 0;
+   }
+
+
+   /**
+    * Calcula o resultado do somatório da multiplicação entre cada entrada 
+    * e seu peso respectivo.
+    */
+   public void calcularSomatorio(){
+      this.somatorio = 0;
+      for(int i = 0; i < this.entradas.length; i++){
+         this.somatorio += (this.entradas[i] * this.pesos[i]);
+      }
    }
 
 
