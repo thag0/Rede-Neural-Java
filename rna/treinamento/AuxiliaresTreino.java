@@ -1,5 +1,6 @@
 package rna.treinamento;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -9,9 +10,10 @@ import rna.Neuronio;
 /**
  * Operadores auxiliares para o treino da rede neural;
  */
-class AuxiliaresTreino{
-      Random random = new Random();
+class AuxiliaresTreino implements Serializable{
+   Random random = new Random();
 
+   
    public AuxiliaresTreino(){
 
    }
@@ -24,7 +26,7 @@ class AuxiliaresTreino{
     *    Isso ainda ta em teste para problemas de classificação, para regressão funciona normalmente.
     * </p>
     * @param redec Rede Neural em formato de lista de camadas.
-    * @param saidas array com as saídas esperadas
+    * @param saidas array com as saídas esperadas.
     */
    public void calcularErroSaida(ArrayList<Camada> redec, double[] saidas){
       Camada saida = redec.get(redec.size()-1);
@@ -154,7 +156,7 @@ class AuxiliaresTreino{
 
    /**
     * Zera todos os gradientes para o cálculo do gradiente em lote.
-    * @param redec
+    * @param redec rede neural no formade de lista de camadas.
     */
    public void zerarGradientesAcumulados(ArrayList<Camada> redec){
       for(int i = 1; i < redec.size(); i++){ 

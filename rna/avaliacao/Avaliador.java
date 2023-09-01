@@ -1,21 +1,23 @@
 package rna.avaliacao;
 
+import java.io.Serializable;
+
 import rna.RedeNeural;
 
 import rna.avaliacao.metrica.Acuracia;
-import rna.avaliacao.metrica.ErroMedioAbsoluto;
 import rna.avaliacao.metrica.F1Score;
 import rna.avaliacao.metrica.MatrizConfusao;
 
 import rna.avaliacao.perda.EntropiaCruzada;
 import rna.avaliacao.perda.EntropiaCruzadaBinaria;
+import rna.avaliacao.perda.ErroMedioAbsoluto;
 import rna.avaliacao.perda.ErroMedioQuadrado;
 
 
 /**
  * Interface para os métodos de avaliação e desempenho da rede neural.
  */
-public class Avaliador{
+public class Avaliador implements Serializable{
    RedeNeural rede;
 
    //perda
@@ -36,7 +38,7 @@ public class Avaliador{
 
    /**
     * Calcula o erro médio quadrado da rede neural em relação aos dados de entrada e saída fornecidos.
-    * @param dados dados de entrada.
+    * @param entrada dados de entrada.
     * @param saida dados de saída contendo os resultados respectivos para as entradas.
     * @return erro médio quadrado da rede em relação ao dados fornecidos (custo/perda).
     */
@@ -70,7 +72,7 @@ public class Avaliador{
    /**
     * Calcula a entropia cruzada entre as saídas previstas pela rede neural
     * e as saídas reais fornecidas.
-    * @param dados dados de entrada.
+    * @param entrada dados de entrada.
     * @param saida dados de saída contendo os resultados respectivos para as entradas.
     * @return entropia cruzada da rede em relação ao dados fornecidos (custo/perda).
     */
