@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 import rna.estrutura.Camada;
-import rna.estrutura.Neuronio;
 import rna.estrutura.RedeNeural;
 import rna.otimizadores.Otimizador;
 
@@ -49,18 +48,19 @@ class Treino implements Serializable{
     * @param embaralhar embaralhar dados de treino para cada época.
     */
    public void treino(RedeNeural rede, Otimizador otimizador, double[][] entradas, double[][] saidas, int epochs, boolean embaralhar){
-      double[] entrada = new double[entradas[0].length];//tamanho de colunas da entrada
-      double[] saida = new double[saidas[0].length];//tamanho de colunas da saída
+      double[] entrada = new double[entradas[0].length];// quantidade de colunas da entrada
+      double[] saida = new double[saidas[0].length];// quantidade de colunas da saída
 
-      
       //transformar a rede numa lista de camadas pra facilitar minha vida
       Camada[] redec = aux.redeParaCamadas(rede);
 
-      for(int i = 0; i < epochs; i++){//quantidade de épocas
+      for(int i = 0; i < epochs; i++){
          //aplicar gradiente estocástico
+         //alterando a organização dos dados em cada época
          if(embaralhar) aux.embaralharDados(entradas, saidas);
 
-         for(int j = 0; j < entradas.length; j++){//percorrer amostras
+         //percorrer amostras
+         for(int j = 0; j < entradas.length; j++){
             //preencher dados de entrada e saída
             System.arraycopy(entradas[j], 0, entrada, 0, entrada.length);
             System.arraycopy(saidas[j], 0, saida, 0, saida.length);
@@ -104,18 +104,9 @@ class Treino implements Serializable{
       //percorrer rede, excluindo camada de entrada
       for(int i = 1; i < redec.length; i++){ 
          
-         Camada camadaAtual = redec[i];
-         Camada camadaAnterior = redec[i-1];
-
-         //não precisa e nem faz diferença calcular os gradientes dos bias
-         int nNeuronios = camadaAtual.quantidadeNeuronios();
-         nNeuronios -= (camadaAtual.temBias()) ? 1 : 0;
-         for(int j = 0; j < nNeuronios; j++){//percorrer neurônios da camada atual
-            
-            Neuronio neuronio = camadaAtual.neuronio(j);
-            for(int k = 0; k < neuronio.pesos.length; k++){//percorrer pesos do neurônio atual
-               neuronio.gradiente[k] = taxaAprendizagem * neuronio.erro * camadaAnterior.neuronio(k).saida;
-            }
+         int nNeuronios = redec[i].quantidadeNeuroniosSemBias();
+         for(int j = 0; j < nNeuronios; j++){
+            redec[i].neuronio(j).calcularGradiente(taxaAprendizagem);
          }
       }
    }

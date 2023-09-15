@@ -134,11 +134,11 @@ public class Camada implements Serializable{
       int nNeuronios = this.neuronios.length-b;//desconsiderar bias
       
       //preencher entradas dos neuronios
-      Neuronio neuronio;
       for(int i = 0; i < nNeuronios; i++){   
-         neuronio = this.neuronios[i];
-         for(int j = 0; j < neuronio.entradas.length; j++){
-            neuronio.entradas[j] = anterior.neuronios[j].saida;
+
+         int numEntradas = this.neuronios[i].entradas.length;
+         for(int j = 0; j < numEntradas; j++){
+            this.neuronios[i].entradas[j] = anterior.neuronios[j].saida;
          }
       }
 
@@ -215,20 +215,32 @@ public class Camada implements Serializable{
          throw new IllegalArgumentException("A nova função de ativação não pode ser nula.");
       }
 
+      if(ativacao instanceof rna.ativacoes.Softmax){
+         this.softmax = true;
+         this.argmax = false;
+      
+      }else if(ativacao instanceof rna.ativacoes.Argmax){
+         this.argmax = true;
+         this.softmax = false;
+      }
+
       this.ativacao = ativacao;
    }
 
    /**
     * Executa a função de ativação derivada específica da camada
     * em todos os neurônios dela, excluindo bias.
+    * <p>
+    *    O resultado da derivada de cada neurônio estará salvo na propriedade {@code neuronio.derivada}.
+    * </p>
     */
    public void ativacaoDerivada(){
       this.ativacao.derivada(this.neuronios, this.neuronios.length-b);
    }
 
    /**
-    * Retrona o nome da função de ativação configurada para a camada.
-    * @return função de ativação configurada para a camada.
+    * Retrona a instância da função de ativação configurada para a camada.
+    * @return função de ativação da camada.
     */
    public FuncaoAtivacao obterAtivacao(){
       return this.ativacao;
@@ -256,11 +268,19 @@ public class Camada implements Serializable{
    }
 
    /**
-    * Retorna o valor da quantidade de neurônios da camada, incluindo bias.
-    * @return quantidade de neurônios totais presente na camada.
+    * Retorna o valor da quantidade de neurônios da camada, {@code incluindo bias}.
+    * @return quantidade de neurônios totais presentes na camada.
     */
    public int quantidadeNeuronios(){
       return this.neuronios.length;
+   }
+
+   /**
+    * Retorna o valor da quantidade de neurônios da camada, {@code excluindo bias}.
+    * @return quantidade de neurônios presentes na camada.
+    */
+   public int quantidadeNeuroniosSemBias(){
+      return this.neuronios.length-b;
    }
 
    /**
@@ -303,7 +323,7 @@ public class Camada implements Serializable{
       
       buffer += "Informações " + this.getClass().getSimpleName() + " " + this.id + " = [\n";
 
-      buffer += espacamento + "Ativação: " + this.obterAtivacao().getClass().getSimpleName() + "\n";
+      buffer += espacamento + "Ativação: " + this.ativacao.getClass().getSimpleName() + "\n";
       buffer += espacamento + "Quantidade neurônios: " + this.neuronios.length + "\n";
       buffer += espacamento + "Bias: " + ((this.b == 1) ? "true" : "false") + "\n"; 
 
