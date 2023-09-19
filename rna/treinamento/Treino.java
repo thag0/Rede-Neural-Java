@@ -69,8 +69,8 @@ class Treino implements Serializable{
             //erros e gradientes
             //e atualizar os pesos
             rede.calcularSaida(entrada);
-            backpropagation(redec, rede.obterTaxaAprendizagem(), saida);
-            otimizador.atualizar(redec, rede.obterTaxaAprendizagem(), rede.obterTaxaMomentum());
+            backpropagation(redec, saida);
+            otimizador.atualizar(redec);
          }
 
          //feedback de avanço da rede
@@ -85,28 +85,26 @@ class Treino implements Serializable{
     * Retropropaga o erro da rede neural de acordo com os dados de entrada e saída esperados e calcula
     * os gradientes dos pesos de cada neurônio.
     * @param redec Rede Neural em formato de lista de camadas.
-    * @param taxaAprendizagem valor de taxa de aprendizagem da rede neural.
     * @param saidas array com as saídas esperadas das amostras.
     */
-   private void backpropagation(Camada[] redec, double taxaAprendizagem, double[] saidas){
+   private void backpropagation(Camada[] redec, double[] saidas){
       aux.calcularErroSaida(redec, saidas);
       aux.calcularErroOcultas(redec);
-      calcularGradientes(redec, taxaAprendizagem);
+      calcularGradientes(redec);
    }
 
    /**
     * Método exclusivo para separar o cálculo dos gradientes das conexões de cada
     * neurônio dentro da rede.
     * @param redec Rede Neural em formato de lista de camadas.
-    * @param taxaAprendizagem valor de taxa de aprendizagem da rede neural.
     */
-   private void calcularGradientes(Camada[] redec, double taxaAprendizagem){
+   private void calcularGradientes(Camada[] redec){
       //percorrer rede, excluindo camada de entrada
       for(int i = 1; i < redec.length; i++){ 
          
          int nNeuronios = redec[i].quantidadeNeuroniosSemBias();
          for(int j = 0; j < nNeuronios; j++){
-            redec[i].neuronio(j).calcularGradiente(taxaAprendizagem);
+            redec[i].neuronio(j).calcularGradiente();
          }
       }
    }
