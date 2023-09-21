@@ -1,22 +1,19 @@
 package rna.estrutura;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-
 import java.util.ArrayList;
 
 import rna.ativacoes.FuncaoAtivacao;
 import rna.avaliacao.Avaliador;
+import rna.otimizadores.AMSGrad;
 import rna.otimizadores.AdaGrad;
 import rna.otimizadores.Adam;
+import rna.otimizadores.Adamax;
 import rna.otimizadores.GradientDescent;
 import rna.otimizadores.Nadam;
 import rna.otimizadores.Otimizador;
 import rna.otimizadores.RMSProp;
 import rna.otimizadores.SGD;
+
 import rna.treinamento.Treinador;
 
 //TODO
@@ -32,9 +29,8 @@ import rna.treinamento.Treinador;
  *    O modelo pode ser usado para problemas de regressão e classificação, contando com algoritmos de treino 
  *    atualmente baseados no backpropagation com adição da ideia de momentum na atualização dos pesos.
  * </p>
- * Possui opções de configuração tanto para hiperparâmetros como taxa de aprendizagem e momentum, 
- * quanto para funções de ativações de camadas individuais, valor de alcance máximo e mínimo na 
- * aleatorização dos pesos iniciais e otimizadores que serão usados durante o treino. 
+ * Possui opções de configuração para funções de ativações de camadas individuais, valor de alcance máximo e 
+ * mínimo na aleatorização dos pesos iniciais e otimizadores que serão usados durante o treino. 
  * <p>
  *    Após configurar as propriedades da rede, o modelo precisará ser compilado para efetivamente 
  *    poder ser utilizado.
@@ -42,7 +38,7 @@ import rna.treinamento.Treinador;
  * @author Thiago Barroso, acadêmico de Engenharia da Computação pela Universidade Federal do Pará, 
  * Campus Tucuruí. Maio/2023.
  */
-public class RedeNeural implements Cloneable, Serializable{
+public class RedeNeural implements Cloneable{
 
    /**
     * Camada de entrada da Rede Neural.
@@ -93,7 +89,7 @@ public class RedeNeural implements Cloneable, Serializable{
     * Otimizador que será utilizado durante o processo de aprendizagem da
     * da Rede Neural.
     */
-   private Otimizador otimizadorAtual = new SGD();//otimizador padrão
+   private Otimizador otimizadorAtual;
 
    /**
     * Nome específico da instância da Rede Neural.
@@ -134,8 +130,8 @@ public class RedeNeural implements Cloneable, Serializable{
     * </p>
     * <p>
     *    Certifique-se de configurar as propriedades da rede por meio das funções de configuração fornecidas 
-    *    como, alcance dos pesos iniciais, taxa de aprendizagem e uso de bias. Caso não seja usada nenhuma 
-    *    das funções de configuração, a rede será compilada com os valores padrão.
+    *    para obter os melhores resultados na aplicação específica. Caso não seja usada nenhuma das funções de 
+    *    configuração, a rede será compilada com os valores padrão.
     * </p>
     * @author Thiago Barroso, acadêmico de Engenharia da Computação pela Universidade Federal do Pará, 
     * Campus Tucuruí. Maio/2023.
@@ -170,9 +166,9 @@ public class RedeNeural implements Cloneable, Serializable{
     *    Após instanciar o modelo, é necessário compilar por meio da função {@code compilar()}
     * </p>
     * <p>
-    *    Certifique-se de configurar as propriedades da rede por meio das funções de configuração 
-    *    fornecidas como, alcance dos pesos iniciais, taxa de aprendizagem e uso de bias. Caso não 
-    *    seja usada nenhuma das funções de configuração, a rede será compilada com os valores padrão.
+    *    Certifique-se de configurar as propriedades da rede por meio das funções de configuração fornecidas 
+    *    para obter os melhores resultados na aplicação específica. Caso não seja usada nenhuma das funções de 
+    *    configuração, a rede será compilada com os valores padrão.
     * </p>
     * @param nEntrada número de neurônios da camada de entrada.
     * @param nOcultas número de neurônios das camadas ocultas.
@@ -234,7 +230,7 @@ public class RedeNeural implements Cloneable, Serializable{
    }
 
    /**
-    * Configura a inicialização dos pesos da rede neural. A forma de inicialização 
+    * Configura a inicialização dos pesos da Rede Neural. A forma de inicialização 
     * pode afetar o tempo de convergência da rede durante o treinamento.
     * <p>
     *    Inicializadores disponíveis:
@@ -454,7 +450,8 @@ public class RedeNeural implements Cloneable, Serializable{
     *    </li>
     *    <li>
     *       <strong> SGD (Gradiente Descendente Estocástico) </strong>: Atualiza os pesos 
-    *       usando o conjunto de treino embaralhado a cada época.
+    *       usando o conjunto de treino embaralhado a cada época, com adicional de momentum
+    *       e correção de nesterov para a atualização.
     *    </li>
     *    <li>
     *       <strong> AdaGrad </strong>: Um otimizador que adapta a taxa de aprendizado para 
@@ -472,6 +469,16 @@ public class RedeNeural implements Cloneable, Serializable{
     *       <strong> Nadam </strong>: Possui as mesmas vantagens de se utilizar o adam, com 
     *       o adicional do acelerador de Nesterov na atualização dos pesos.
     *    </li>
+    *    <li>
+    *       <strong> AMSGrad </strong>: Um otimizador que mantém um histórico dos valores
+    *       dos gradientes acumulados para evitar a degradação da taxa de aprendizado,
+    *       proporcionando uma convergência mais estável.
+    *    </li>
+    *    <li>
+    *       <strong> Adamax </strong>: Um otimizador que é uma variação do Adam e
+    *       mantém o máximo absoluto dos valores dos gradientes acumulados em vez de usar
+    *       a média móvel dos quadrados dos gradientes.
+    *    </li>
     * </ol>
     * <p>
     *    {@code O otimizador padrão é o SGD}
@@ -483,6 +490,8 @@ public class RedeNeural implements Cloneable, Serializable{
     * dos otimizadores disponíveis.
     */
    public void configurarOtimizador(int otimizador){
+      modeloCompilado();
+
       switch(otimizador){
          case 1 -> this.otimizadorAtual = new GradientDescent();
          case 2 -> this.otimizadorAtual = new SGD();
@@ -490,8 +499,12 @@ public class RedeNeural implements Cloneable, Serializable{
          case 4 -> this.otimizadorAtual = new RMSProp();
          case 5 -> this.otimizadorAtual = new Adam();
          case 6 -> this.otimizadorAtual = new Nadam();
+         case 7 -> this.otimizadorAtual = new AMSGrad();
+         case 0 -> this.otimizadorAtual = new Adamax();
          default-> throw new IllegalArgumentException("Valor fornecido do otimizador é inválido.");
       }
+
+      this.otimizadorAtual.inicializar(this.obterQuantidadePesos());
    }
 
    /**
@@ -508,11 +521,14 @@ public class RedeNeural implements Cloneable, Serializable{
     * @throws IllegalArgumentException se o novo otimizador for nulo.
     */
    public void configurarOtimizador(Otimizador otimizador){
+      modeloCompilado();
+
       if(otimizador == null){
          throw new IllegalArgumentException("O novo otimizador não pode ser nulo.");
       }
 
       this.otimizadorAtual = otimizador;
+      this.otimizadorAtual.inicializar(this.obterQuantidadePesos());
    }
 
    /**
@@ -611,6 +627,12 @@ public class RedeNeural implements Cloneable, Serializable{
       this.saida = new Camada(false);
       this.saida.configurarId(idCamada);
       this.saida.inicializar(arquitetura[arquitetura.length-1], arquitetura[arquitetura.length-2], alcancePeso, inicializadorPeso);
+
+      //inicializar otimizador
+      if(this.otimizadorAtual == null){
+         this.otimizadorAtual = new SGD();
+         this.otimizadorAtual.inicializar(this.obterQuantidadePesos());
+      }
 
       compilado = true;//modelo pode ser usado
    }
@@ -1008,15 +1030,41 @@ public class RedeNeural implements Cloneable, Serializable{
    }
 
    /**
+    * Retorna a quantiade de pesos total da rede, incluindo conexões com bias.
+    * @return quantiade de pesos total da rede.
+    */
+   public int obterQuantidadePesos(){
+      int numConexoes = 0;
+      for(Camada camada : this.ocultas){
+         numConexoes += camada.numConexoes();
+      }
+      numConexoes += this.saida.numConexoes();
+
+      return numConexoes;
+   }
+
+   public boolean temBias(){
+      return (this.BIAS == 1) ? true : false;
+   }
+
+   /**
     * Exibe algumas informações importantes sobre a Rede Neural, como:
     * <ul>
-    *    <li>Otimizador atual.</li>
-    *    <li>Valor da taxa de aprendizagem.</li>
-    *    <li>Valor da taxa de momentum.</li>
-    *    <li>Contém bias como neurônio adicional.</li>
-    *    <li>Função de ativação de todas as camadas ocultas.</li>
-    *    <li>Função de ativação da camada de saída.</li>
-    *    <li>Arquitetura da rede.</li>
+    *    <li>
+    *       Otimizador atual e suas informações específicas.
+    *    </li>
+    *    <li>
+    *       Contém bias como neurônio adicional.
+    *    </li>
+    *    <li>
+    *       Função de ativação de todas as camadas ocultas.
+    *    </li>
+    *    <li>
+    *       Função de ativação da camada de saída.
+    *    </li>
+    *    <li>
+    *       Arquitetura da rede.
+    *    </li>
     * </ul>
     * @return buffer formatado contendo as informações.
     * @throws IllegalArgumentException se o modelo não foi compilado previamente.
@@ -1115,56 +1163,10 @@ public class RedeNeural implements Cloneable, Serializable{
       //método nativo mais eficiente na cópia de vetores
       System.arraycopy(neuronio.entradas, 0, clone.entradas, 0, clone.entradas.length);
       System.arraycopy(neuronio.pesos, 0, clone.pesos, 0, clone.pesos.length);
-      System.arraycopy(neuronio.momentum, 0, clone.momentum, 0, clone.momentum.length);
-      System.arraycopy(neuronio.velocidade, 0, clone.velocidade, 0, clone.velocidade.length);
       System.arraycopy(neuronio.gradiente, 0, clone.gradiente, 0, clone.gradiente.length);
       System.arraycopy(neuronio.gradienteAcumulado, 0, clone.gradienteAcumulado, 0, clone.gradienteAcumulado.length); 
 
       return clone;
-   }
-
-   /**
-    * Salva a classe da rede em um arquivo especificado, o caminho não leva em consideração
-    * o formato, de preferência deve ser .dat, caso seja especificado apenas o nome, o 
-    * arquivo será salvo no mesmo diretório que o arquivo principal.
-    * @param caminho caminho de destino do arquivo que será salvo.
-    */
-   public void salvarArquivoRede(String caminho){
-      try{
-         FileOutputStream arquivo = new FileOutputStream(caminho);
-         ObjectOutputStream objeto = new ObjectOutputStream(arquivo);
-
-         objeto.writeObject(this);
-         objeto.close();
-         arquivo.close();
-
-      }catch(Exception e){
-         e.printStackTrace();
-      }
-   }
-
-   /**
-    * Lê um arquivo de Rede Neural no caminho especificado, o caminho não leva em 
-    * consideração o formato, logo precisa ser especificado.
-    * @param caminho caminho do arquivo de rede salvo
-    * @return objeto do tipo {@code RedeNeural} lido pelo arquivo.
-    */
-   public static RedeNeural lerArquivoRede(String caminho){
-      RedeNeural rede = null;
-
-      try{
-         FileInputStream arquivo = new FileInputStream(caminho);
-         ObjectInputStream objeto = new ObjectInputStream(arquivo);
-
-         rede = (RedeNeural) objeto.readObject();
-         objeto.close();
-         arquivo.close();
-
-      }catch(Exception e){
-         e.printStackTrace();
-      }
-
-      return rede;
    }
 
    @Override

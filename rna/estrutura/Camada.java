@@ -1,7 +1,5 @@
 package rna.estrutura;
 
-import java.io.Serializable;
-
 import rna.ativacoes.Argmax;
 import rna.ativacoes.ELU;
 import rna.ativacoes.FuncaoAtivacao;
@@ -29,7 +27,7 @@ import rna.ativacoes.TanH;
  *    Após instanciar a camada é necessário inicializar seus neurônios.
  * </p>
  */
-public class Camada implements Serializable{
+public class Camada{
 
    /**
     * <p>
@@ -311,6 +309,18 @@ public class Camada implements Serializable{
     */
    public boolean temSoftmax(){
       return this.softmax;
+   }
+
+   /**
+    * TODO
+    * @return
+    */
+   public int numConexoes(){
+      int numConexoes = 0;
+      for(int i = 0; i < this.neuronios.length-b; i++){
+         numConexoes += this.neuronios[i].numConexoes();
+      }
+      return numConexoes;
    }
 
    /**
