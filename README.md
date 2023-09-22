@@ -106,7 +106,7 @@ double[][] = rede.calcularSaida(dadoEntrada);
 # Salvando e lendo arquivos
 Uma opção que fiz foi serializar a rede num arquivo externo, consequentemente também fiz uma funcionalidade de leitura para arquivos externos, a leitura e salvamento preserva toda a arquitetura da rede e o mais importante, seus pesos.
 
-Para salvar a rede num arquivo externo, é necessário especificar o caminho onde o arquivo será salvo, esse caminho deve incluir tanto o nome do arquivo quanto a extensão dele. O arquivo deve ser salvo no formato .txt e é acessado por meio da classe <strong> Serializador </strong> disponível em <pre>rna.serializacao.Serializador</pre>.
+Para salvar a rede num arquivo externo, é necessário especificar o caminho onde o arquivo será salvo, esse caminho deve incluir tanto o nome do arquivo quanto a extensão dele. O arquivo deve ser salvo no formato .txt e é acessado por meio da classe <strong> Serializador </strong> disponível em <pre>rna.serializacao.Serializador</pre>
 ```
 String caminho = "./rede-salva.txt";
 Serializador.salvar(rede, caminho);
