@@ -60,7 +60,11 @@ Depois de ter instanciado a rede num objeto, e ter feito ou não as configuraç�
 ``` 
 rede.compilar();
  ```
-*Algumas configurações iniciais podem depender da compilação prévia do modelo.*
+
+Também é possível passar parâmetros para a compilação, são eles o otimizador usado durante o treino e o inicializador de pesos da rede.
+``` 
+rede.compilar(new Adam(), new Xavier());
+ ```
 
 # Treino e uso
 Com o modelo criado e compilado, podemos usá-lo para fazer predições com a função de calcular saída:
